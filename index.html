@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Fashion Nails & Spa VIP — Review Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,700;0,6..96,900;1,6..96,400;1,6..96,700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ── Reset & tokens ─────────────────────────────────────────────── */
+:root {
+  --bg:     #080509;
+  --bg2:    #100c13;
+  --bg3:    #1a1420;
+  --bg4:    #231b2b;
+  --rose:   #9b2b45;
+  --rose2:  #c23558;
+  --rose3:  #e8607a;
+  --rose4:  rgba(155,43,69,.12);
+  --gold:   #c9a96e;
+  --gold2:  #e8c98a;
+  --gold3:  rgba(201,169,110,.12);
+  --cream:  #f8f2ea;
+  --muted:  #b0a4b8;
+  --muted2: #6e6078;
+  --border: rgba(201,169,110,.12);
+  --border2:rgba(201,169,110,.22);
+  --sh:     0 2px 24px rgba(0,0,0,.4);
+  --sh2:    0 8px 48px rgba(0,0,0,.5);
+  --r:      10px;
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; -webkit-tap-highlight-color:transparent; }
+body {
+  background:var(--bg);
+  color:var(--cream);
+  font-family:'DM Sans',sans-serif;
+  font-weight:400;
+  font-size:16px;
+  line-height:1.6;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* Grain overlay */
+body::before {
+  content:'';
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)' opacity='.032'/%3E%3C/svg%3E");
+  opacity:.6;
+}
+
+/* Ambient glows */
+.glow-a { position:fixed; top:-30vh; right:-20vw; width:60vw; height:60vw; max-width:700px; max-height:700px; background:radial-gradient(circle, rgba(155,43,69,.18) 0%, transparent 65%); pointer-events:none; z-index:0; }
+.glow-b { position:fixed; bottom:-20vh; left:-15vw; width:50vw; height:50vw; max-width:600px; max-height:600px; background:radial-gradient(circle, rgba(201,169,110,.08) 0%, transparent 65%); pointer-events:none; z-index:0; }
+
+.page { position:relative; z-index:1; max-width:1200px; margin:0 auto; padding:0 16px 80px; }
+
+/* ── Progress bar ── */
+#progress { position:fixed; top:0; left:0; height:2px; background:linear-gradient(90deg,var(--rose),var(--gold)); z-index:200; transition:width .15s; }
+
+/* ── Scroll animations ── */
+.reveal { opacity:0; transform:translateY(32px); transition:opacity .7s ease, transform .7s ease; }
+.reveal.up { opacity:1; transform:none; }
+.reveal.d1 { transition-delay:.08s; }
+.reveal.d2 { transition-delay:.16s; }
+.reveal.d3 { transition-delay:.24s; }
+.reveal.d4 { transition-delay:.32s; }
+.reveal.d5 { transition-delay:.40s; }
+.reveal-scale { opacity:0; transform:scale(.94); transition:opacity .65s ease, transform .65s ease; }
+.reveal-scale.up { opacity:1; transform:none; }
+.reveal-left { opacity:0; transform:translateX(-28px); transition:opacity .65s ease, transform .65s ease; }
+.reveal-left.up { opacity:1; transform:none; }
+.reveal-right { opacity:0; transform:translateX(28px); transition:opacity .65s ease, transform .65s ease; }
+.reveal-right.up { opacity:1; transform:none; }
+
+/* ── Hero header ── */
+.hero {
+  padding: clamp(60px, 12vh, 120px) 0 clamp(48px, 8vh, 80px);
+  display:flex; flex-direction:column; gap:0;
+}
+.hero-eyebrow {
+  display:flex; align-items:center; gap:12px;
+  font-size:10px; letter-spacing:.32em; text-transform:uppercase;
+  color:var(--gold); font-weight:500; margin-bottom:20px;
+  opacity:0; animation:fadeUp .8s .1s ease forwards;
+}
+.hero-eyebrow::before { content:''; width:28px; height:1px; background:var(--gold); }
+.hero h1 {
+  font-family:'Bodoni Moda',serif;
+  font-size:clamp(44px, 9vw, 120px);
+  font-weight:900; line-height:.9; letter-spacing:-.02em;
+  color:var(--cream);
+  opacity:0; animation:fadeUp .9s .2s ease forwards;
+}
+.hero h1 em { font-style:italic; color:var(--rose2); }
+.hero h1 .sub-line { display:block; color:var(--gold); font-size:.55em; }
+.hero-meta {
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+  margin-top:24px;
+  opacity:0; animation:fadeUp .9s .35s ease forwards;
+}
+.hero-dot { width:4px; height:4px; border-radius:50%; background:var(--muted2); }
+.hero-meta span { font-size:12px; color:var(--muted); }
+.hero-badge {
+  display:flex; align-items:center; gap:8px;
+  background:var(--rose); border-radius:100px;
+  padding:6px 16px 6px 8px;
+  opacity:0; animation:fadeUp .9s .45s ease forwards;
+  margin-top:20px; align-self:flex-start;
+}
+.badge-star { font-size:18px; }
+.badge-text { font-family:'Bodoni Moda',serif; font-size:20px; font-weight:700; }
+.badge-label { font-size:10px; letter-spacing:.1em; text-transform:uppercase; opacity:.75; }
+
+/* ── KPI strip ── */
+.kpis {
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:10px;
+  margin:0 0 clamp(40px,6vh,64px);
+}
+@media(min-width:640px){ .kpis { grid-template-columns:repeat(6,1fr); } }
+.kpi {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:clamp(14px,3vw,22px) clamp(12px,2vw,18px);
+  position:relative; overflow:hidden;
+}
+.kpi::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--rose),transparent); }
+.kpi-label { font-size:9px; letter-spacing:.22em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; font-weight:500; }
+.kpi-value { font-family:'Bodoni Moda',serif; font-size:clamp(28px,5vw,40px); font-weight:700; color:var(--gold2); line-height:1; }
+.kpi-value.accent { color:var(--rose3); }
+.kpi-value.sm { font-size:clamp(16px,3vw,22px); line-height:1.2; }
+.kpi-sub { font-size:10px; color:var(--muted); margin-top:4px; }
+
+/* ── Section head ── */
+.section-head {
+  display:flex; align-items:center; gap:14px;
+  margin:clamp(40px,6vh,72px) 0 clamp(16px,2.5vh,24px);
+}
+.section-head h2 {
+  font-family:'Bodoni Moda',serif;
+  font-size:clamp(20px,4vw,30px); font-weight:400; font-style:italic;
+  color:var(--gold); white-space:nowrap;
+}
+.section-head::after { content:''; flex:1; height:1px; background:var(--border2); }
+
+/* ── Panel ── */
+.panel {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:clamp(18px,3vw,28px) clamp(16px,3vw,26px);
+  box-shadow:var(--sh);
+}
+.ptitle {
+  font-size:9px; letter-spacing:.22em; text-transform:uppercase;
+  color:var(--gold); font-weight:500; margin-bottom:16px;
+  display:flex; align-items:center; gap:10px;
+}
+.ptitle::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* ── Grid ── */
+.g { display:grid; gap:10px; margin-bottom:10px; }
+.g2 { grid-template-columns:1fr 1fr; }
+.g3 { grid-template-columns:1fr 1fr 1fr; }
+.g4 { grid-template-columns:repeat(4,1fr); }
+.g13 { grid-template-columns:1fr 2fr; }
+/* ── Mobile overrides ── */
+@media(max-width:680px){
+  .g2,.g3,.g4,.g13 { grid-template-columns:1fr; }
+  .trend-strip { grid-template-columns:1fr 1fr; }
+  .kpis { grid-template-columns:repeat(2,1fr); }
+  /* Hero */
+  .hero h1 { font-size:clamp(36px,11vw,58px); line-height:.95; }
+  .hero-dot { display:none; }
+  .hero-meta { flex-direction:column; gap:3px; }
+  .hero-badge { padding:5px 14px 5px 8px; }
+  /* MT card */
+  .mt-stats { gap:14px; flex-wrap:wrap; }
+  .mt-stat-num { font-size:clamp(30px,8vw,46px); }
+  /* Section heads */
+  .section-head h2 { white-space:normal; }
+  /* Callouts */
+  .callout { gap:10px; }
+  .callout-icon { font-size:16px; }
+  /* Table toolbar: search full-width, selects in 2-col grid */
+  .tbl-toolbar { flex-direction:column; gap:10px; }
+  .tbl-toolbar .tbl-search { width:100%; min-width:0; }
+  .tbl-toolbar > div { display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%; }
+  .tbl-select { width:100%; min-height:42px; }
+  .tbl-count { grid-column:1/-1; text-align:right; font-size:11px; }
+  /* Pagination */
+  .tbl-pg { flex-direction:column; align-items:flex-start; }
+  .pg-btns { flex-wrap:wrap; }
+  /* Charts */
+  .chart-box { height:165px !important; }
+  /* Review feed */
+  .rfeed { max-height:400px; }
+  /* Footer */
+  footer { flex-direction:column; gap:4px; }
+}
+@media(min-width:681px) and (max-width:900px){
+  .g3,.g4 { grid-template-columns:1fr 1fr; }
+  .kpis { grid-template-columns:repeat(3,1fr); }
+}
+@media(max-width:480px){
+  .trend-strip { grid-template-columns:1fr; }
+  .kpis { grid-template-columns:1fr 1fr; }
+  .page { padding:0 12px 60px; }
+  .stab { padding:5px 10px; font-size:11px; }
+  .rfeed { max-height:340px; }
+  .kpi { padding:14px 12px; }
+  .panel { padding:16px 14px; }
+  .tbl-wrap table { font-size:12px; }
+  .tbl-wrap table td, .tbl-wrap table th { padding:8px 10px; }
+}
+
+/* ── MT card ── */
+.mt-card {
+  background:linear-gradient(135deg,var(--rose) 0%,#5a0f20 100%);
+  border-radius:var(--r);
+  padding:clamp(22px,4vw,36px);
+  box-shadow:0 8px 40px rgba(155,43,69,.35);
+  position:relative; overflow:hidden;
+}
+.mt-card::before {
+  content:'"'; position:absolute; top:-24px; right:12px;
+  font-family:'Bodoni Moda',serif; font-size:clamp(120px,25vw,220px);
+  font-weight:900; color:rgba(255,255,255,.05); line-height:1; pointer-events:none;
+}
+.mt-eyebrow { font-size:9px; letter-spacing:.25em; text-transform:uppercase; opacity:.55; margin-bottom:6px; }
+.mt-name { font-family:'Bodoni Moda',serif; font-size:clamp(24px,5vw,36px); font-weight:700; margin-bottom:4px; }
+.mt-sub { font-size:9px; letter-spacing:.2em; text-transform:uppercase; opacity:.5; margin-bottom:18px; }
+.mt-stats { display:flex; gap:clamp(20px,4vw,36px); flex-wrap:wrap; margin-bottom:18px; }
+.mt-stat-num { font-family:'Bodoni Moda',serif; font-size:clamp(36px,6vw,52px); font-weight:900; line-height:1; }
+.mt-stat-label { font-size:10px; opacity:.55; margin-top:2px; }
+.mt-quote { font-family:'Bodoni Moda',serif; font-style:italic; font-size:clamp(13px,2.5vw,16px); line-height:1.65; opacity:.82; }
+
+/* ── Callout ── */
+.callout {
+  background:var(--bg3); border:1px solid var(--border2);
+  border-radius:8px; padding:16px 18px;
+  display:flex; align-items:flex-start; gap:14px;
+}
+.callout.warn { border-color:rgba(155,43,69,.3); background:rgba(155,43,69,.08); }
+.callout-icon { font-size:20px; flex-shrink:0; margin-top:1px; }
+.callout-title { font-size:14px; font-weight:500; color:var(--cream); margin-bottom:5px; }
+.callout-body { font-size:13px; color:#c0b4c8; line-height:1.7; font-weight:400; }
+
+/* ── Trend callout strip ── */
+.trend-strip {
+  display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+  margin-bottom:10px;
+}
+@media(max-width:540px){ .trend-strip { grid-template-columns:1fr; } }
+.trend-cell {
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:8px; padding:16px 18px;
+  display:flex; flex-direction:column; gap:4px;
+}
+.trend-num { font-family:'Bodoni Moda',serif; font-size:clamp(28px,5vw,40px); font-weight:900; line-height:1; color:var(--gold2); }
+.trend-num.red { color:var(--rose3); }
+.trend-label { font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
+.trend-sub { font-size:11px; color:var(--muted); margin-top:2px; }
+
+/* ── Chart boxes ── */
+.chart-box { position:relative; }
+
+/* ── Horiz bars ── */
+.hbars { display:flex; flex-direction:column; gap:clamp(10px,2vw,14px); }
+.hb-top { display:flex; justify-content:space-between; margin-bottom:5px; flex-wrap:wrap; gap:4px; }
+.hb-name { font-size:13px; color:var(--cream); font-weight:400; }
+.hb-count { font-size:11px; color:var(--muted); }
+.hb-track { height:3px; background:var(--bg4); border-radius:2px; }
+.hb-fill { height:100%; border-radius:2px; background:linear-gradient(90deg,var(--rose2),var(--gold)); width:0; transition:width 1.3s cubic-bezier(.16,1,.3,1); }
+
+/* ── Concerns ── */
+.concerns { display:flex; flex-direction:column; gap:10px; }
+.concern {
+  padding:clamp(12px,2vw,16px) clamp(14px,2vw,18px);
+  background:var(--bg3); border-left:2px solid var(--rose3);
+  border-radius:0 8px 8px 0; font-size:14px; line-height:1.75; color:#d0c4d8; font-weight:400;
+}
+.concern strong { color:var(--rose3); font-weight:500; }
+
+/* ── Staff tabs ── */
+.staff-tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+.stab {
+  background:var(--bg3); border:1px solid var(--border2);
+  border-radius:100px; padding:6px 14px;
+  font-family:'DM Sans',sans-serif; font-size:12px; color:#c4b8c0;
+  cursor:pointer; transition:all .18s; -webkit-tap-highlight-color:transparent;
+}
+.stab:hover { border-color:var(--rose3); color:var(--rose3); }
+.stab.on { background:var(--rose); color:#fff; border-color:var(--rose); box-shadow:0 3px 12px rgba(155,43,69,.28); }
+.stab.all.on { background:var(--cream); color:var(--bg); border-color:var(--cream); }
+.sbadge { display:inline-block; font-size:10px; padding:1px 6px; border-radius:10px; margin-left:3px; background:rgba(255,255,255,.18); }
+.stab:not(.on) .sbadge { background:var(--bg4); color:var(--muted); }
+
+/* ── Review feed ── */
+.feed-meta { font-size:12px; color:var(--muted); margin-bottom:12px; }
+.rfeed { display:flex; flex-direction:column; gap:10px; max-height:480px; overflow-y:auto; padding-right:4px; }
+.rfeed::-webkit-scrollbar { width:3px; }
+.rfeed::-webkit-scrollbar-track { background:var(--bg3); }
+.rfeed::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+.rcard {
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:8px; padding:clamp(12px,2vw,16px) clamp(14px,2vw,18px);
+  transition:all .2s;
+}
+.rcard.hi { border-color:rgba(155,43,69,.35); background:rgba(155,43,69,.06); }
+.rcard.neg { border-left:2px solid #e07070; }
+.rmeta { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:7px; gap:8px; flex-wrap:wrap; }
+.rauthor { font-size:13px; font-weight:500; color:var(--cream); }
+.rright { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+.rbody { font-size:14px; line-height:1.7; color:#d0c4d8; font-weight:400; }
+.hl { background:rgba(155,43,69,.22); color:var(--rose3); border-radius:2px; padding:0 3px; font-weight:500; }
+
+/* ── Sentiment tags ── */
+.tag { display:inline-block; padding:2px 7px; border-radius:4px; font-size:10px; font-weight:500; margin-left:6px; }
+.tag-pos { background:rgba(45,106,79,.2); color:#52b788; }
+.tag-neg { background:rgba(155,43,69,.2); color:var(--rose3); }
+.tag-neu { background:rgba(201,169,110,.15); color:var(--gold); }
+
+/* ── Table ── */
+.tbl-toolbar { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+.tbl-search {
+  flex:1; min-width:160px;
+  background:var(--bg3); border:1px solid var(--border2);
+  border-radius:6px; padding:10px 14px;
+  font-family:'DM Sans',sans-serif; font-size:13px; color:var(--cream);
+  outline:none; transition:border-color .2s;
+}
+.tbl-search:focus { border-color:var(--gold); }
+.tbl-search::placeholder { color:var(--muted2); }
+.tbl-select {
+  background:var(--bg3); border:1px solid var(--border2);
+  border-radius:6px; padding:10px 12px;
+  font-family:'DM Sans',sans-serif; font-size:12px; color:#b0a0b8;
+  cursor:pointer; outline:none; min-width:0;
+}
+.tbl-count { font-size:12px; color:var(--muted); white-space:nowrap; align-self:center; }
+.tbl-wrap { overflow-x:auto; border-radius:8px; border:1px solid var(--border); }
+table { width:100%; border-collapse:collapse; font-size:13px; min-width:600px; }
+thead tr { background:var(--bg3); }
+th {
+  padding:11px 14px; text-align:left;
+  font-size:9px; letter-spacing:.18em; text-transform:uppercase; color:var(--muted);
+  font-weight:500; border-bottom:1px solid var(--border2);
+  white-space:nowrap; cursor:pointer; user-select:none;
+}
+th:hover { color:var(--gold); }
+th.sorted { color:var(--gold); }
+td { padding:12px 14px; border-bottom:1px solid var(--border); color:#d0c4d8; vertical-align:top; font-size:14px; }
+tr:last-child td { border-bottom:none; }
+tr:hover td { background:rgba(201,169,110,.04); }
+.td-author { font-weight:400; color:var(--cream); white-space:nowrap; }
+.td-date { color:var(--muted); white-space:nowrap; font-size:11px; }
+.star-f { color:var(--gold); } .star-e { color:var(--muted2); }
+.staff-chip { display:inline-block; background:var(--rose4); color:var(--rose3); border-radius:3px; padding:2px 6px; font-size:10px; font-weight:500; white-space:nowrap; margin:1px; }
+.tbl-pg { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:var(--bg3); border-top:1px solid var(--border); font-size:12px; color:var(--muted); flex-wrap:wrap; gap:8px; }
+.pg-btns { display:flex; gap:6px; flex-wrap:wrap; }
+.pg-btn { background:var(--bg4); border:1px solid var(--border2); border-radius:5px; padding:5px 11px; font-family:'DM Sans',sans-serif; font-size:12px; color:#b0a0b8; cursor:pointer; transition:all .15s; }
+.pg-btn:hover { border-color:var(--gold); color:var(--gold); }
+.pg-btn.active { background:var(--rose); color:#fff; border-color:var(--rose); }
+.pg-btn:disabled { opacity:.35; cursor:not-allowed; }
+
+/* ── Quote cards ── */
+.qlist { display:flex; flex-direction:column; gap:clamp(10px,2vw,14px); }
+.qcard { padding:clamp(14px,3vw,20px) clamp(16px,3vw,22px); background:var(--bg3); border-radius:8px; border-left:2px solid var(--gold); }
+.qtext { font-family:'Bodoni Moda',serif; font-style:italic; font-size:clamp(14px,2.5vw,17px); line-height:1.65; color:var(--cream); }
+.qby { font-size:10px; color:var(--gold); margin-top:8px; letter-spacing:.08em; font-weight:500; text-transform:uppercase; }
+
+/* ── Summary ── */
+.summary { font-size:15px; line-height:1.85; color:#d0c4d8; font-weight:400; }
+.summary p { margin-bottom:14px; }
+.summary p:last-child { margin-bottom:0; }
+
+/* ── Footer ── */
+footer { margin-top:clamp(48px,8vh,80px); padding-top:20px; border-top:1px solid var(--border); display:flex; justify-content:space-between; font-size:11px; color:var(--muted); letter-spacing:.06em; flex-wrap:wrap; gap:8px; }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:none} }
+@keyframes spin { to{transform:rotate(360deg)} }
+
+/* ── Number counter animation ── */
+.count-anim { display:inline-block; }
+</style>
+</head>
+<body>
+<div class="glow-a"></div>
+<div class="glow-b"></div>
+<div id="progress"></div>
+
+<div class="page">
+
+  <!-- Hero -->
+  <header class="hero">
+    <div class="hero-eyebrow">Fashion Nails & Spa VIP · Northridge, CA</div>
+    <h1>Review<br><em>Intelligence</em><span class="sub-line">Dashboard</span></h1>
+    <div class="hero-meta">
+      <span>737 Google Reviews</span>
+      <div class="hero-dot"></div>
+      <span>April 2026</span>
+      <div class="hero-dot"></div>
+      <span>9000 Reseda Blvd #101</span>
+    </div>
+    <div class="hero-badge">
+      <span class="badge-star">★</span>
+      <span class="badge-text">4.71</span>
+      <span class="badge-label">All-time · Google</span>
+    </div>
+  </header>
+
+  <!-- KPIs -->
+  <div class="kpis">
+    <div class="kpi reveal d1"><div class="kpi-label">Reviews</div><div class="kpi-value count-anim" data-target="737">0</div><div class="kpi-sub">Google verified</div></div>
+    <div class="kpi reveal d2"><div class="kpi-label">5-Star Rate</div><div class="kpi-value accent">90.5<span style="font-size:.5em">%</span></div><div class="kpi-sub">667 of 737</div></div>
+    <div class="kpi reveal d3"><div class="kpi-label">Since MT</div><div class="kpi-value">4.86<span style="font-size:.45em;color:var(--muted)">★</span></div><div class="kpi-sub">Oct 2024 → now</div></div>
+    <div class="kpi reveal d4"><div class="kpi-label">Responses</div><div class="kpi-value accent">93<span style="font-size:.5em">%</span></div><div class="kpi-sub">owner replied</div></div>
+    <div class="kpi reveal d5"><div class="kpi-label">MT Reviews</div><div class="kpi-value count-anim" data-target="156">0</div><div class="kpi-sub">mention owner</div></div>
+    <div class="kpi reveal d5" style="transition-delay:.48s"><div class="kpi-label">Top Word</div><div class="kpi-value sm" style="color:var(--gold2)">Amazing</div><div class="kpi-sub">used 229×</div></div>
+  </div>
+
+  <!-- MT spotlight -->
+  <div class="section-head reveal"><h2>Owner Spotlight</h2></div>
+  <div class="g g13 reveal">
+    <div class="mt-card reveal-left">
+      <div class="mt-eyebrow">Owner · Head Tech · Heart of the Salon</div>
+      <div class="mt-name">MT — Money T</div>
+      <div class="mt-sub">Fashion Nails & Spa VIP</div>
+      <div class="mt-stats">
+        <div><div class="mt-stat-num">156</div><div class="mt-stat-label">reviews mention MT</div></div>
+        <div><div class="mt-stat-num">4.9★</div><div class="mt-stat-label">avg in MT reviews</div></div>
+        <div><div class="mt-stat-num">21%</div><div class="mt-stat-label">of all reviews</div></div>
+      </div>
+      <div class="mt-quote">"She brings Vegas to the Valley. I was feeling down, walked out feeling happy. Don't hesitate and come over." — Maritza</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="callout reveal-right d1">
+        <div class="callout-icon">📈</div>
+        <div>
+          <div class="callout-title">Rating jumped 3.0 → 4.9 after MT took over in Oct 2024</div>
+          <div class="callout-body">Under previous management (2022–23), the salon averaged just 3.0–3.2 stars with consistent complaints about rudeness and hygiene. MT's arrival transformed everything — wine, snacks, laughter, genuine care. Reviews from Oct 2024 onward are overwhelmingly 5-star.</div>
+        </div>
+      </div>
+      <div class="callout warn reveal-right d2">
+        <div class="callout-icon">⚠️</div>
+        <div>
+          <div class="callout-title">Appointment consistency is the #1 ongoing challenge</div>
+          <div class="callout-body">Recent 1-star reviews cite being reassigned when MT is unavailable, waits despite confirmed appointments, and quality dips when specific staff aren't present. Managing demand around MT's schedule is the biggest risk to sustaining the rating.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trend strip -->
+  <div class="section-head reveal"><h2>The Turnaround Story</h2></div>
+  <div class="trend-strip">
+    <div class="trend-cell reveal d1">
+      <div class="trend-num red">3.0★</div>
+      <div class="trend-label">Avg rating 2022</div>
+      <div class="trend-sub">Old management era</div>
+    </div>
+    <div class="trend-cell reveal d2" style="align-items:center;justify-content:center">
+      <div style="font-size:28px">→</div>
+      <div class="trend-label" style="text-align:center;margin-top:4px">MT takes over<br>Oct 2024</div>
+    </div>
+    <div class="trend-cell reveal d3">
+      <div class="trend-num">4.9★</div>
+      <div class="trend-label">Avg rating 2025</div>
+      <div class="trend-sub">Under MT's leadership</div>
+    </div>
+  </div>
+
+  <!-- Charts row 1 -->
+  <div class="section-head reveal"><h2>Trends Over Time</h2></div>
+  <div class="g g3">
+    <div class="panel reveal d1">
+      <div class="ptitle">Monthly Volume</div>
+      <div class="chart-box" style="height:clamp(160px,30vw,190px)"><canvas id="volChart"></canvas></div>
+      <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px">Nov 2024 – Apr 2026</div>
+    </div>
+    <div class="panel reveal d2">
+      <div class="ptitle">Monthly Avg Rating</div>
+      <div class="chart-box" style="height:clamp(160px,30vw,190px)"><canvas id="ratingChart"></canvas></div>
+    </div>
+    <div class="panel reveal d3">
+      <div class="ptitle">Year-over-Year Rating</div>
+      <div class="chart-box" style="height:clamp(160px,30vw,190px)"><canvas id="yoyChart"></canvas></div>
+      <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px">Red = old management era</div>
+    </div>
+  </div>
+
+  <!-- Charts row 2 -->
+  <div class="section-head reveal"><h2>Ratings & Sentiment</h2></div>
+  <div class="g g4">
+    <div class="panel reveal d1">
+      <div class="ptitle">Sentiment</div>
+      <div style="display:flex;align-items:center;gap:14px">
+        <canvas id="donutChart" width="100" height="100" style="flex-shrink:0"></canvas>
+        <div style="display:flex;flex-direction:column;gap:8px;flex:1">
+          <div style="display:flex;align-items:center;gap:7px;font-size:12px"><div style="width:7px;height:7px;border-radius:50%;background:#2d6a4f;flex-shrink:0"></div><span>Pos</span><span style="margin-left:auto;color:var(--muted)">90.5%</span></div>
+          <div style="display:flex;align-items:center;gap:7px;font-size:12px"><div style="width:7px;height:7px;border-radius:50%;background:#9a6e2a;flex-shrink:0"></div><span>Neu</span><span style="margin-left:auto;color:var(--muted)">3.1%</span></div>
+          <div style="display:flex;align-items:center;gap:7px;font-size:12px"><div style="width:7px;height:7px;border-radius:50%;background:#9b2b45;flex-shrink:0"></div><span>Crit</span><span style="margin-left:auto;color:var(--muted)">6.4%</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel reveal d2">
+      <div class="ptitle">Stars</div>
+      <div class="chart-box" style="height:clamp(130px,22vw,150px)"><canvas id="starChart"></canvas></div>
+    </div>
+    <div class="panel reveal d3">
+      <div class="ptitle">Top Staff</div>
+      <div class="chart-box" style="height:clamp(130px,22vw,150px)"><canvas id="staffChart"></canvas></div>
+    </div>
+    <div class="panel reveal d4">
+      <div class="ptitle">Top Services</div>
+      <div class="chart-box" style="height:clamp(130px,22vw,150px)"><canvas id="svcChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Themes + concerns -->
+  <div class="section-head reveal"><h2>What Clients Say</h2></div>
+  <div class="g g2">
+    <div class="panel reveal-left">
+      <div class="ptitle">Top Themes Clients Love</div>
+      <div class="hbars" id="themesBars"></div>
+    </div>
+    <div class="panel reveal-right">
+      <div class="ptitle">Critical Feedback</div>
+      <div class="concerns">
+        <div class="concern"><strong>Appointment honoring</strong> — Clients booked for MT arrive on time and get reassigned or wait 20–30+ min without notice. Most damaging to reputation.</div>
+        <div class="concern"><strong>Pricing transparency</strong> — No visible price board. Clients report unexpected $85 charges for basic services at checkout.</div>
+        <div class="concern"><strong>Tech consistency</strong> — Quality is uneven. Most complaints attributed to specific unnamed techs. New hires need closer supervision.</div>
+        <div class="concern"><strong>Legacy ratings drag</strong> — 40 one-star reviews from 2016–2023 (old mgmt) still pull the all-time average down despite current excellence.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Staff explorer -->
+  <div class="section-head reveal"><h2>Staff Explorer</h2></div>
+  <div class="panel reveal">
+    <div class="ptitle">Tap a name to filter reviews — names highlighted in red</div>
+    <div class="staff-tabs" id="staffTabs"></div>
+    <div class="feed-meta" id="feedMeta"></div>
+    <div class="rfeed" id="reviewFeed"></div>
+  </div>
+
+  <!-- Reviews table -->
+  <div class="section-head reveal"><h2>All 737 Reviews</h2></div>
+  <div class="panel reveal" style="padding:0;overflow:hidden">
+    <div style="padding:16px 18px 0">
+      <div class="tbl-toolbar">
+        <input class="tbl-search" id="tblSearch" placeholder="Search reviews, names, staff…" oninput="tblFilter()">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+          <select class="tbl-select" id="tblStar" onchange="tblFilter()"><option value="">All ★</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select>
+          <select class="tbl-select" id="tblSent" onchange="tblFilter()"><option value="">All</option><option value="pos">Positive</option><option value="neu">Neutral</option><option value="neg">Critical</option></select>
+          <select class="tbl-select" id="tblStaff" onchange="tblFilter()">
+            <option value="">All staff</option>
+            <option>MT</option><option>Tracy</option><option>Jay</option><option>Anna</option>
+            <option>Tammy</option><option>Zen</option><option>Lisa</option><option>Wynn</option>
+          </select>
+          <select class="tbl-select" id="tblYear" onchange="tblFilter()"><option value="">All years</option><option>2026</option><option>2025</option><option>2024</option><option>2023</option><option>2022</option><option>2021</option></select>
+          <span class="tbl-count" id="tblCount"></span>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px;display:none" id="tblScrollHint">← Scroll table horizontally on mobile</div>
+    </div>
+    <div class="tbl-wrap">
+      <table><thead><tr>
+        <th onclick="tblSort('author')">Reviewer</th>
+        <th onclick="tblSort('stars')">Stars</th>
+        <th onclick="tblSort('date')">Date</th>
+        <th>Review</th>
+        <th>Staff</th>
+        <th>Sent.</th>
+        <th onclick="tblSort('likes')" style="text-align:center">👍</th>
+      </tr></thead>
+      <tbody id="tblBody"></tbody></table>
+    </div>
+    <div class="tbl-pg" id="tblPg"></div>
+  </div>
+
+  <!-- Summary + quotes -->
+  <div class="section-head reveal"><h2>Insights & Voices</h2></div>
+  <div class="g g2">
+    <div class="panel reveal-left">
+      <div class="ptitle">Executive Summary</div>
+      <div class="summary">
+        <p>Fashion Nails & Spa VIP's story is one of remarkable transformation. Under previous ownership, the salon averaged just 3.0 stars with consistent complaints about rudeness and hygiene. Since MT took over in October 2024, the rating has risen to 4.9 — one of the most dramatic turnarounds in the valley.</p>
+        <p>MT herself is the single biggest driver of loyalty. Mentioned in 21% of all recent reviews with near-perfect ratings, she has personally turned first-time visitors into lifelong regulars. Tracy (83 mentions), Jay (46), and Anna (35) are her strongest supporting cast.</p>
+        <p>The primary risk is appointment reliability. A growing cluster of recent 1-star reviews comes from clients who booked MT specifically, arrived on time, and were handed to another tech. Managing client expectations around her schedule is the most critical operational challenge ahead.</p>
+      </div>
+    </div>
+    <div class="panel reveal-right">
+      <div class="ptitle">Standout Client Quotes</div>
+      <div class="qlist">
+        <div class="qcard"><div class="qtext">"She brings Vegas to the Valley. I was feeling down, walked out feeling happy. Don't hesitate and come over."</div><div class="qby">— Maritza M.</div></div>
+        <div class="qcard"><div class="qtext">"I've been getting nails done for 35–40 years. This is by far the nicest, cleanest, most welcoming spot."</div><div class="qby">— Jackie W., Jan 2026</div></div>
+        <div class="qcard"><div class="qtext">"MT didn't let me leave until my pedicure was done to perfection. She stayed open hours after closing."</div><div class="qby">— Adri A., Nov 2025</div></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span>Fashion Nails & Spa VIP · Review Intelligence · 737 Google Reviews</span>
+    <span>9000 Reseda Blvd #101, Northridge CA · (818) 998-7888</span>
+  </footer>
+
+</div><!-- /page -->
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────
+const REVIEWS=[{"author":"Lily","stars":5,"text":"MT is amazing I love her super nice and very professional","staff":["MT"],"sentiment":"pos","date":"Apr 2026","month":"2026-04","likes":0},{"author":"Patricio Romero","stars":5,"text":"They are very welcoming and do great work ! I'll be back !","staff":[],"sentiment":"pos","date":"Apr 2026","month":"2026-04","likes":0},{"author":"Nathalie Aguilar","stars":5,"text":"Totally recommend VIP Nails they treat you like family here super VIP vibes","staff":[],"sentiment":"pos","date":"Apr 2026","month":"2026-04","likes":0},{"author":"Ashosha Haque","stars":5,"text":"MT stepped in and got to work! I read plenty of good reviews about her and hoped I got her. She definitely knew what she was doing. I'm coming here again for sure!","staff":["MT"],"sentiment":"pos","date":"Apr 2026","month":"2026-04","likes":0},{"author":"MHadiya Miranda","stars":5,"text":"I had the most amazing experience with MT my nail tech. I asked her for perfection and that's what I got! Thank you MT for taking your time and dedication on my nails.","staff":["MT"],"sentiment":"pos","date":"Apr 2026","month":"2026-04","likes":0},{"author":"Maritza Maritza","stars":5,"text":"This is MT from VIP fashion Nails where you get the best treatment as soon as you walk into the door. Greeted by MT the Owner she brings Vegas to the Valley. I was feeling a little down walked out feeling happy. Too happy I would say don't hesitate and come over.","staff":["MT"],"sentiment":"pos","date":"Apr 2026","month":"2026-04","likes":0},{"author":"Annabelle Marie","stars":1,"text":"I got my nails done by Mt not too long ago and she completely damaged my nails. Filed them extremely thin and cut me several times. She proceeded to say that it happened because I took too long to get a fill in.","staff":["MT"],"sentiment":"neg","date":"Apr 2026","month":"2026-04","likes":0},{"author":"Kathy Williams","stars":5,"text":"Made it before 11. My nails look fabulous. I requested almond shaped and she nailed it. I am officially a forever client.","staff":[],"sentiment":"pos","date":"Apr 2026","month":"2026-04","likes":0},{"author":"Rebecca Martens","stars":5,"text":"MT is so welcoming you feel like home. Wynn, great technique on my pedicure. Love the snacks and drink. Fully recommend","staff":["MT","Wynn"],"sentiment":"pos","date":"Apr 2026","month":"2026-04","likes":0},{"author":"Louis Cortez","stars":5,"text":"If you truly want to experience what VIP means you have to stop by and meet the team. MT is amazing and her entire team. Snacks as you wait. Just pure luxury.","staff":["MT"],"sentiment":"pos","date":"Apr 2026","month":"2026-04","likes":0},{"author":"Laguna OC","stars":5,"text":"I had the most enjoyable experience! Money T (MT) was my nail technician and was extremely friendly, thorough, professional and just a JOY to be around!!!","staff":["MT"],"sentiment":"pos","date":"Apr 2026","month":"2026-04","likes":0},{"author":"Hannah Anochie","stars":5,"text":"I had such a great experience at this nail salon! From the moment I walked in, everyone was incredibly kind, welcoming, and attentive. Lisa and Zen were such angels.","staff":["Lisa","Zen"],"sentiment":"pos","date":"Apr 2026","month":"2026-04","likes":0},{"author":"Alexis Zuniga","stars":5,"text":"Amazing service always! When MT is there she is always fun and welcoming. This morning I had the honor of having Lisa do my fill and Amy do my pedi.","staff":["MT","Lisa","Amy"],"sentiment":"pos","date":"Apr 2026","month":"2026-04","likes":0},{"author":"Adona Fassika","stars":5,"text":"i came here a few days ago and MT did my nails. Amazing experience so sweet and perfect nails. will be coming back","staff":["MT"],"sentiment":"pos","date":"Mar 2026","month":"2026-03","likes":0},{"author":"Maria Valencia","stars":5,"text":"First time here and Wow, what a beautiful experience. They are so attentive and sweet, very professional thank you MT and Zen for your attention.","staff":["MT","Zen"],"sentiment":"pos","date":"Mar 2026","month":"2026-03","likes":0},{"author":"Mahdia Alam","stars":2,"text":"Loved the service and the atmosphere, but I was disappointed with the pricing. There was no price chart available, and I was charged $85 for a simple gel manicure.","staff":[],"sentiment":"neg","date":"Mar 2026","month":"2026-03","likes":0},{"author":"Syeda Rab","stars":5,"text":"Amazing job!! So grateful for Lisa and Jay!","staff":["Lisa","Jay"],"sentiment":"pos","date":"Mar 2026","month":"2026-03","likes":0},{"author":"Collette Rooney","stars":5,"text":"Another AMAZING job by Jay and the crew!! They never disappoint! They are always accommodating and provide excellent customer service!!","staff":["Jay"],"sentiment":"pos","date":"Mar 2026","month":"2026-03","likes":0},{"author":"Jocelyn E","stars":1,"text":"I can't recommend this place, it was absolutely chaotic and really stressful. The owner was yelling. The nail tech left my cuticles really bloody.","staff":[],"sentiment":"neg","date":"Mar 2026","month":"2026-03","likes":0},{"author":"Shirley Rendon","stars":5,"text":"I have found my new nail salon!! MT was the sweetest and executed my stiletto nails to the exact shape, length, and color I wanted. We will definitely be back!","staff":["MT"],"sentiment":"pos","date":"Mar 2026","month":"2026-03","likes":0},{"author":"Shara Angelique","stars":5,"text":"This was my first time visiting and I have been searching for a new place. Zen did my pedicure and she was wonderful. She was very sweet, patient, and took her time.","staff":["Zen"],"sentiment":"pos","date":"Mar 2026","month":"2026-03","likes":0},{"author":"Sylvia RG","stars":5,"text":"Absolutely great service very respectful and kind. My new favorite salon. Come see MT she makes sure your nails are perfect so you can walk out a happy customer!","staff":["MT"],"sentiment":"pos","date":"Feb 2026","month":"2026-02","likes":0},{"author":"Ashlee Ramos","stars":5,"text":"My new favorite nail salon! MT was so sweet. Gave me a real VIP experience. Zen was also sweet! The best pedicure I've had in a while.","staff":["MT","Zen"],"sentiment":"pos","date":"Feb 2026","month":"2026-02","likes":0},{"author":"Michelle Ramirez","stars":5,"text":"I'm so happy to have found such a welcoming nail salon. I always feel so special when I come. Mt, Lisa, and Quine are so amazing! 10s across the board!!","staff":["MT","Lisa"],"sentiment":"pos","date":"Feb 2026","month":"2026-02","likes":0},{"author":"David C","stars":1,"text":"This nail salon is beyond disrespectful to customers. It should never be acceptable to make fun of customers. I will not come here again.","staff":[],"sentiment":"neg","date":"Feb 2026","month":"2026-02","likes":0},{"author":"Hira Shah","stars":5,"text":"This nail salon is incredible, especially MT! She always goes above and beyond to make her clients feel welcome and at home.","staff":["MT"],"sentiment":"pos","date":"Feb 2026","month":"2026-02","likes":0},{"author":"Pablo Reyes","stars":5,"text":"I have tried so many places around Northridge but this is a hidden gem. Really nice staff and the owner MT is the sweetest!","staff":["MT"],"sentiment":"pos","date":"Feb 2026","month":"2026-02","likes":0},{"author":"berenice meza","stars":5,"text":"Omg wow this place is amazing. Anna is really good at pedicure and MT is great! I recommend 100 percent!!!","staff":["MT","Anna"],"sentiment":"pos","date":"Feb 2026","month":"2026-02","likes":0},{"author":"E. Cortez","stars":5,"text":"Jay Lam is top notch! He is quick and does a phenomenal job! I found my new nail place!","staff":["Jay"],"sentiment":"pos","date":"Feb 2026","month":"2026-02","likes":0},{"author":"Angie","stars":5,"text":"This time was completely different in the BEST way. The new management is incredible, and MT is truly amazing. From the moment I sat down, she made me feel like I was right at home.","staff":["MT"],"sentiment":"pos","date":"Feb 2026","month":"2026-02","likes":0},{"author":"Yvonne Teagardin","stars":5,"text":"What an amazing experience!!! MT was so welcoming. Tammy was so sweet and gentile. Quincy asked a few questions and gave me exactly what I asked for. A true gem in the Valley.","staff":["MT","Quincy","Tammy"],"sentiment":"pos","date":"Feb 2026","month":"2026-02","likes":0},{"author":"Sandra Granados","stars":5,"text":"MT & Tammy were super professional and kind. I'm very happy with my pedicure will be coming back.","staff":["MT","Tammy"],"sentiment":"pos","date":"Feb 2026","month":"2026-02","likes":0},{"author":"Cienna Malyn","stars":5,"text":"MT and Tammy are so sweet and helpful! Will be coming back soon","staff":["MT","Tammy"],"sentiment":"pos","date":"Jan 2026","month":"2026-01","likes":0},{"author":"Marine Mandzhikyan","stars":5,"text":"This salon is a gem. The atmosphere is calm and welcoming, the staff is professional and kind, and the quality of work is outstanding. I can't express how happy I am.","staff":[],"sentiment":"pos","date":"Jan 2026","month":"2026-01","likes":0},{"author":"Nicole Nunerley","stars":5,"text":"This is my second time visiting here and I absolutely love it. MT the manager did my nails both times and she took the time to explain each step.","staff":["MT"],"sentiment":"pos","date":"Jan 2026","month":"2026-01","likes":0},{"author":"tai crawford","stars":5,"text":"VIP! Starting with MT amazing the owner greet you with VIP status. They serve their client with choice of wine, beer, coffee, or tea. This pedicure was beyond the experience. Luxury!","staff":["MT","Jay","Wynn"],"sentiment":"pos","date":"Jan 2026","month":"2026-01","likes":0},{"author":"Sammy Bocanegra","stars":5,"text":"Anna was amazing, she made me comfortable and the end result for my pedicure was beautiful !!","staff":["Anna"],"sentiment":"pos","date":"Jan 2026","month":"2026-01","likes":0},{"author":"Stephanie Suarez","stars":5,"text":"Nails. Perfect. Pedicure. Spectacular. Zen and Quincy did such an amazing job!! Well def come again!","staff":["Zen","Quincy"],"sentiment":"pos","date":"Jan 2026","month":"2026-01","likes":0},{"author":"Kristy Pinedo","stars":5,"text":"Super kind, nice, and awesome service! My nail artist MT was very enthusiastic and funny, sharpest stiletto I've ever gotten!! Food and drinks were very yummy! 10/10 best nail salon!","staff":["MT"],"sentiment":"pos","date":"Jan 2026","month":"2026-01","likes":0},{"author":"Cynthia Mendoza","stars":5,"text":"Had the most amazing experience with Anna! I came in for a pedicure and left feeling more relaxed than I've felt in a long time. Every little attention to detail felt so luxurious!","staff":["Anna"],"sentiment":"pos","date":"Jan 2026","month":"2026-01","likes":0},{"author":"Estrella Flores","stars":1,"text":"There is a male nail tech there with glasses. Please do not get your nails done by him. He will constantly over file your nail even though you say it hurts.","staff":[],"sentiment":"neg","date":"Jan 2026","month":"2026-01","likes":1},{"author":"Maxine Newton","stars":5,"text":"MT and Lisa were AMAZING! From start to finish, the experience was top-tier. They were both so professional, attentive, and incredibly skilled. I'll definitely be coming back.","staff":["MT","Lisa"],"sentiment":"pos","date":"Jan 2026","month":"2026-01","likes":0},{"author":"diana ayala","stars":5,"text":"Felt very pampered, I got the deluxe gel Mani Pedi. The cuticle work was excellent. Thank you for your careful work Anna and Zen! Will be back.","staff":["Zen","Anna"],"sentiment":"pos","date":"Jan 2026","month":"2026-01","likes":0},{"author":"Jackie Windham","stars":5,"text":"I have been getting my nails done for 35 to 40 years. This is by far the nicest cleanest, most welcoming spot. They'll do any design.","staff":[],"sentiment":"pos","date":"Jan 2026","month":"2026-01","likes":0},{"author":"Shanti McLinden","stars":5,"text":"Such a relaxing pedicure! Loved the wine and homemade banana chips — such a thoughtful touch. Great service, peaceful vibe, and my feet look amazing.","staff":[],"sentiment":"pos","date":"Dec 2025","month":"2025-12","likes":0},{"author":"Briana Cruz","stars":3,"text":"It took over 2 hours to do simple French tip design on my toes because the first two people couldn't get it right. The timing really dampened my personal experience.","staff":[],"sentiment":"neu","date":"Dec 2025","month":"2025-12","likes":0},{"author":"Alina's Aesthetic","stars":5,"text":"The absolute best nail salon I've ever been to! Will never go to another place. Kelly and MT are the very best","staff":["MT"],"sentiment":"pos","date":"Dec 2025","month":"2025-12","likes":0},{"author":"Brett Charles","stars":5,"text":"Anna was great I'm more then satisfied every time I go","staff":["Anna"],"sentiment":"pos","date":"Dec 2025","month":"2025-12","likes":0},{"author":"Awzuki","stars":5,"text":"MT is so lovely she did amazing!! my nails exactly how i wanted, incredible at her job and treats her work as art. It was a pleasure visiting especially from England","staff":["MT"],"sentiment":"pos","date":"Dec 2025","month":"2025-12","likes":0},{"author":"Johanna Granillo","stars":5,"text":"My nails are so cute. Good prices and amazing service!!! Thank so much Jay!","staff":["Jay"],"sentiment":"pos","date":"Dec 2025","month":"2025-12","likes":0},{"author":"Brenda Hernandez","stars":5,"text":"MT is absolutely amazing. My experience was stellar. MT's passion and dedication to her craft are palpable. I recommend her 110%.","staff":["MT"],"sentiment":"pos","date":"Dec 2025","month":"2025-12","likes":0},{"author":"Marlena Pavich","stars":5,"text":"Tammy was absolutely incredible. Had a lovely experience here with the VIP pedicure. The owner MT was an absolute pleasure and so lovely to the customers.","staff":["MT","Tammy"],"sentiment":"pos","date":"Dec 2025","month":"2025-12","likes":0},{"author":"Michelle","stars":1,"text":"I had been going to this salon for a few months. I discovered the lovely Kelly! She's an amazing, patient, and talented nail tech. But had an issue with management not honoring my mom's request.","staff":[],"sentiment":"neg","date":"Dec 2025","month":"2025-12","likes":0},{"author":"EVIE","stars":5,"text":"I had most amazing service by Kelly and Tammy. They took their time and didn't rush. The nails came out beautiful! The owner is amazing, sweet and very funny!","staff":["Tammy"],"sentiment":"pos","date":"Dec 2025","month":"2025-12","likes":0},{"author":"Hailey Mikkels","stars":5,"text":"Tammy gave me the best pedicure of my life!! Everyone is friendly and the service is VIP all the way. A hidden gem I highly recommend.","staff":["Tammy"],"sentiment":"pos","date":"Dec 2025","month":"2025-12","likes":0},{"author":"Reagan Cordova","stars":5,"text":"Absolutely the best nail salon experience! MT is so delightful and gives you that luxury Vegas treatment right here at home. Complimentary drinks and delicious homemade snacks.","staff":["MT"],"sentiment":"pos","date":"Dec 2025","month":"2025-12","likes":0},{"author":"Sara Faden","stars":5,"text":"MT, the owner of the salon, impressed me with her energy, kindness, and meticulous work. She made sure every detail of my nails was perfect. I highly recommend!","staff":["MT"],"sentiment":"pos","date":"Dec 2025","month":"2025-12","likes":0},{"author":"Alejandra Perez","stars":5,"text":"I am so happy with my experience here! The salon was clean, welcoming, and had such a calming vibe. My nail tech took the time to really listen to what I wanted.","staff":["MT"],"sentiment":"pos","date":"Dec 2025","month":"2025-12","likes":0},{"author":"Kayla Carig","stars":5,"text":"I don't typically leave reviews but I loved my experience so much! Anna helped me out, with stellar service. The whole experience was amazing. Safe to say I will be returning.","staff":["Anna"],"sentiment":"pos","date":"Dec 2025","month":"2025-12","likes":0},{"author":"Lovie Starks","stars":5,"text":"BEAUTIFUL SPA Complimentary beverages, including wine. Nail artists that tend to you with care. I got my brows, nails, and toes done. I WILL be back.","staff":[],"sentiment":"pos","date":"Nov 2025","month":"2025-11","likes":0},{"author":"Cherie","stars":1,"text":"If I could give half a star I would. One hour to take off what I had and prep my nails. The nails she was sizing me for were too big and pushing down on my skin.","staff":[],"sentiment":"neg","date":"Nov 2025","month":"2025-11","likes":0},{"author":"Diana Escobar","stars":5,"text":"First time here. OMG! Best nail salon I've been to in the valley. Jay took care of me and was detailed with his work. Love this place!","staff":["Jay"],"sentiment":"pos","date":"Nov 2025","month":"2025-11","likes":0},{"author":"Erica Escobar","stars":5,"text":"The best nail place ever!!! MT is the best you have to go to her she is so gentle and funny. She talks to you and makes you feel so comfortable. Thank you MT!!!","staff":["MT"],"sentiment":"pos","date":"Nov 2025","month":"2025-11","likes":0},{"author":"Amiel Toure","stars":5,"text":"Tammy was very sweet and did a fantastic job! MT was also fabulous! Fantastic customer service 10/10","staff":["MT","Tammy"],"sentiment":"pos","date":"Nov 2025","month":"2025-11","likes":0},{"author":"Meline Atamian","stars":1,"text":"So unprofessional. I made two appointments for my mother and me. When we arrived, MT had a doctor's appointment and was leaving. They had my number but never called to let me know.","staff":["MT"],"sentiment":"neg","date":"Nov 2025","month":"2025-11","likes":0},{"author":"Brejea Luckett","stars":5,"text":"This is the best nail shop in Northridge!!! Money Team aka MT is literally THE BOMB she literally brought Vegas to the shop with complimentary drinks!","staff":["MT","Zen"],"sentiment":"pos","date":"Nov 2025","month":"2025-11","likes":0},{"author":"Silvia G","stars":5,"text":"From the moment I walked in, I knew this place was special. Wynn did my pedicure — one of the best pedicures I have ever received! He has magic hands.","staff":["Wynn"],"sentiment":"pos","date":"Nov 2025","month":"2025-11","likes":0},{"author":"Raylene Verduzco","stars":5,"text":"I love this place! Everyone here is so professional and knowledgeable. I've had Anna, Tracy, Wynn — when I tell you everyone here is top notch it's the truth!","staff":["MT","Anna","Tracy","Wynn"],"sentiment":"pos","date":"Nov 2025","month":"2025-11","likes":0},{"author":"Adri Ana","stars":5,"text":"MT and staff gave me the best service ever!!! I arrived after 7pm and stayed close to 2 hours! MT didn't let me leave without having my pedicure done to perfection!","staff":["MT"],"sentiment":"pos","date":"Nov 2025","month":"2025-11","likes":0},{"author":"Amber Mar","stars":2,"text":"10/10 first visit. Second visit unfortunately had a rough experience with bloodborne pathogen safety concerns. The woman who did my gel removal used the same file on me that she used on a prior client.","staff":["MT","Zen"],"sentiment":"neg","date":"Oct 2025","month":"2025-10","likes":0},{"author":"Kimbra Grillet","stars":5,"text":"I called last minute and I'm SO grateful I came in. I absolutely love my gel x nails that Jay did. Tammy did such a meticulous job. They helped me past their closing time.","staff":["Jay","Tammy"],"sentiment":"pos","date":"Oct 2025","month":"2025-10","likes":0},{"author":"Alva Vega","stars":5,"text":"First time coming here and definitely not the last! They provide complimentary beverages and snacks and MT's personality puts the cherry on top!","staff":["MT"],"sentiment":"pos","date":"Oct 2025","month":"2025-10","likes":0},{"author":"Celine Arsenian","stars":5,"text":"MT is the best! Service, hospitality, all on point. You can tell she is experienced and genuinely wants the best for her clients. Genuinely so kind and funny.","staff":["MT"],"sentiment":"pos","date":"Oct 2025","month":"2025-10","likes":0},{"author":"Lindsay Wells","stars":5,"text":"I love this place so much and Tracy is incredible! The best ever. They are so friendly, giving and welcoming. You can tell customer service is important to them.","staff":["Tracy"],"sentiment":"pos","date":"Oct 2025","month":"2025-10","likes":0},{"author":"Kaila Stephens","stars":5,"text":"This is the best nail spot to ever exist! MT and Tracy made my experience so fun and special! Wine and snacks were brought out. You definitely won't regret it!","staff":["MT","Tracy"],"sentiment":"pos","date":"Sep 2025","month":"2025-09","likes":0},{"author":"Tricia Robichau","stars":5,"text":"I've been coming here for years and MT made it amazing. I love everyone here but especially MT and Tracy. Tracy has been doing my pedicures for three years.","staff":["MT","Tracy"],"sentiment":"pos","date":"Sep 2025","month":"2025-09","likes":0},{"author":"Paul Joseph Paul","stars":5,"text":"From the moment I walked in, I felt genuinely welcomed. MT greeted us with warm smiles and immediately offered snacks, food, and coffee. Tracy did my pedicure and she was fantastic.","staff":["MT","Tracy"],"sentiment":"pos","date":"Sep 2025","month":"2025-09","likes":0},{"author":"Meghan Green","stars":5,"text":"yes I saw the tiktok and totally worth the hype! nail artist was MT and I got biogel. She was so sweet and really took the time to explain the process.","staff":["MT"],"sentiment":"pos","date":"Sep 2025","month":"2025-09","likes":0},{"author":"Madeline Rose Croall","stars":5,"text":"I am amazed! Fashion Nails & Spa is heaven on earth! Tracy & MT helped my sister and I. From the complementary snacks & wine to the luxurious services - we could not be happier!","staff":["MT","Tracy"],"sentiment":"pos","date":"Sep 2025","month":"2025-09","likes":0},{"author":"Jennifer Ray","stars":5,"text":"MT the owner was phenomenal. She kept the shop open late for us and accommodated us in every way. Anna did my daughter and was so patient and caring.","staff":["MT","Anna","Tammy","Wynn"],"sentiment":"pos","date":"Sep 2025","month":"2025-09","likes":0},{"author":"Carla Turner","stars":5,"text":"I cannot say enough about Fashion Nail and Spa VIP. The quality of expertise is tremendous. I received a manicure and pedicure from Tracy and it was fabulous.","staff":["Tracy"],"sentiment":"pos","date":"Sep 2025","month":"2025-09","likes":0},{"author":"Josi Nguyen","stars":5,"text":"The Most Luxurious Pedicure Experience Ever! MT, Tammy, and Tracy were phenomenal and so professional! This wasn't just a pedicure — it was a ritual.","staff":["MT","Tammy","Tracy"],"sentiment":"pos","date":"Jul 2025","month":"2025-07","likes":0},{"author":"Fannie Esparza","stars":5,"text":"I started coming here when they first opened. The energy is great and MT is so fun and inviting. They offer you wine, beer and snacks. I've gotten gel, bio gel and gel x.","staff":["MT"],"sentiment":"pos","date":"Jul 2025","month":"2025-07","likes":0},{"author":"Victoria Viola","stars":5,"text":"Amazing attentiveness, serve wine and other beverages with snacks, great customer service and discount for CSUN students. MT stayed open an extra hour to finish my toes.","staff":["MT"],"sentiment":"pos","date":"Jul 2025","month":"2025-07","likes":0},{"author":"Elijah Daniels","stars":5,"text":"Tracy was amazing from start to finish. Top tier experience. I really enjoyed the 15 minute massage at the end. It nearly put me to sleep. Highly recommend.","staff":["Tracy"],"sentiment":"pos","date":"Jul 2025","month":"2025-07","likes":0},{"author":"kelly payton","stars":5,"text":"Literally the best mani & pedi of my life!! MT gave me organic gel which was BEAUTIFUL!! And she needs her own reality show. Wynn was the cutest! So careful and precise!","staff":["MT","Wynn"],"sentiment":"pos","date":"Aug 2025","month":"2025-08","likes":0},{"author":"Trang Tran","stars":5,"text":"I had an incredible Special Deluxe VIP Pedicure (90 minutes) with an added CBD treatment performed by the amazing Wynn! His deep massage was absolutely the best I've ever had.","staff":["Wynn"],"sentiment":"pos","date":"Aug 2025","month":"2025-08","likes":0},{"author":"Heather Partidas","stars":5,"text":"Tracy was so wonderful and took care of all my needs. Customer service is 10/10 here. Even provided drinks and snacks. Very relaxing experience","staff":["Tracy"],"sentiment":"pos","date":"Aug 2025","month":"2025-08","likes":0},{"author":"Fatima","stars":5,"text":"My first time and it was so relaxing and staff is very friendly and welcoming right away. Tracy did my pedicure and was so sweet and professional.","staff":["Tracy"],"sentiment":"pos","date":"Aug 2025","month":"2025-08","likes":0},{"author":"Karen Guerra","stars":5,"text":"Love my nail girl Tracy she is great knows how to always treat all her clients and always with care. The spa meets what you request they are on it.","staff":["Tracy"],"sentiment":"pos","date":"Aug 2025","month":"2025-08","likes":0},{"author":"Kayla Cisneros","stars":5,"text":"MT and Tracy are absolutely amazing! MT is incredibly detailed and takes her time to make sure everything looks perfect. She never rushes and the results always last.","staff":["MT","Tracy"],"sentiment":"pos","date":"Aug 2025","month":"2025-08","likes":0},{"author":"Jizzelle Anai","stars":1,"text":"Would not recommend this place to anyone. The staff is very unprofessional and it is unsanitary. I called in an appointment only for a gel x removal and was not attended for an hour.","staff":[],"sentiment":"neg","date":"Aug 2025","month":"2025-08","likes":0},{"author":"hasmik oganisyan","stars":5,"text":"At 6:50 PM, I called Fashion Nail & Spa VIP, and without hesitation, they told us to come in for a 7:15 appointment. From the moment we walked in, the experience was first-class.","staff":["MT"],"sentiment":"pos","date":"Aug 2025","month":"2025-08","likes":0},{"author":"alexia biafore","stars":5,"text":"WOW! Just wow. MT is not only the best manicurist she is also so kind and welcoming. The sangria and the snacks are an added bonus. This is my new spot, hands down.","staff":["MT"],"sentiment":"pos","date":"Aug 2025","month":"2025-08","likes":0},{"author":"Hailey Jenkins","stars":5,"text":"Great experience with MT! She truly takes her time and puts 110% in every set. Great conversation along with complimentary wine and yummy snacks. 10/10 experience.","staff":["MT"],"sentiment":"pos","date":"Aug 2025","month":"2025-08","likes":0},{"author":"emma jane","stars":5,"text":"came here for the first time and never had a better pedicure. MT took her time to REDO my sister's nails even after they were closed 3 hours ago. Tracy stayed with us as well.","staff":["MT","Tracy"],"sentiment":"pos","date":"Aug 2025","month":"2025-08","likes":0},{"author":"Vy T Bui","stars":5,"text":"Mrs. MT is one of a kind and her energy is so amazing. Her service is top of the notch. All the staff is kind and amazing. The salon is beautiful and clean.","staff":["MT"],"sentiment":"pos","date":"Oct 2024","month":"2024-10","likes":0},{"author":"Chrissy Khalfani","stars":5,"text":"The best nail shop I've ever been to hands down. MT is amazing I literally love her she has the best customer service and was very detail oriented. This place is a gem.","staff":["MT"],"sentiment":"pos","date":"Oct 2024","month":"2024-10","likes":0},{"author":"Mary Sal","stars":5,"text":"The new owner MT radiated extreme positivity and enthusiasm. The salon had been beautifully renovated, creating a fresh and inviting atmosphere. The VIP treatment is real.","staff":["MT"],"sentiment":"pos","date":"Oct 2024","month":"2024-10","likes":0},{"author":"Rebecca Hernandez","stars":5,"text":"Best salon EVER! Not only do you get treated like a QUEEN — 21+ gets wine and beer — but the nail techs are INSANELY talented and they're the SWEETEST people you'll EVER meet!!","staff":[],"sentiment":"pos","date":"Oct 2024","month":"2024-10","likes":0},{"author":"Pat Lunsford","stars":1,"text":"DO NOT COME. Every time I make an appointment, it's a mess. I always make an appt for a specific person but every time I'm either waiting there for hours or pawned off to someone else.","staff":["MT"],"sentiment":"neg","date":"Dec 2024","month":"2024-12","likes":0},{"author":"Kimberly Gonzalez","stars":1,"text":"Horrible service, VERY RUDE!!!! And they start talking about customers in their language. Never again.","staff":[],"sentiment":"neg","date":"Dec 2024","month":"2024-12","likes":0},{"author":"Maria Haro","stars":1,"text":"I got a pedicure and the very next day, the gel wrinkled and it started to peel. I went to ask them to fix it and they were extremely rude.","staff":[],"sentiment":"neg","date":"Feb 2025","month":"2025-02","likes":1},{"author":"Brenda Vasquez","stars":5,"text":"My fourth time coming back here. I love the ladies here they handle me with care especially that I have sensitive skin. They already know me by name!","staff":[],"sentiment":"pos","date":"Oct 2023","month":"2023-10","likes":0},{"author":"As G","stars":1,"text":"This place uses MMA. if you ever get acrylics from here soak them off. I just did today and it was gooey. MMA can make your nails fall off, be careful and stay away.","staff":[],"sentiment":"neg","date":"Oct 2023","month":"2023-10","likes":0},{"author":"Claire Jones","stars":1,"text":"They ground my nails down, which hurt a lot. I haven't been able to get my nails done in 3 months because the natural nails they ground down are so thin and fragile.","staff":[],"sentiment":"neg","date":"Mar 2023","month":"2023-03","likes":0},{"author":"Evelyn Mejia","stars":1,"text":"Same day I got them done the color from my right thumb peeled off. I went back and they told me they would charge me $20 to change color. Very disappointed.","staff":[],"sentiment":"neg","date":"Sep 2022","month":"2022-09","likes":1},{"author":"Larissa Thomas","stars":1,"text":"Vivian did my acrylic nails very thick square and horrible looking. She is very rude she does not listen to your needs and she rushed me. They don't know what customer service is.","staff":[],"sentiment":"neg","date":"May 2022","month":"2022-05","likes":1},{"author":"Kim Torres","stars":1,"text":"The callus file still had old skin on it from someone else. Overall cleanliness was disgusting. The pedicure was finished in 20 minutes. Awful experience.","staff":[],"sentiment":"neg","date":"Dec 2021","month":"2021-12","likes":3},{"author":"Samantha Bickel","stars":1,"text":"I have used this nail salon twice. In less than 48hrs a nail broke. I have had the nails for a week and have had a total of 5 broken nails. They charged me to fix it.","staff":[],"sentiment":"neg","date":"Jul 2021","month":"2021-07","likes":5},{"author":"Mary Nenejian","stars":1,"text":"I have never experienced such horrible customer service in my life. My gel manicure was already lifting the next day. They were extremely rude when I came back.","staff":["Lisa"],"sentiment":"neg","date":"Feb 2021","month":"2021-02","likes":6},{"author":"La Hormiga Atómica","stars":2,"text":"This place is awful! Bad customer service, the lady who did my daughter's nails was in a rush and she made her bleed, the job was poorly done.","staff":[],"sentiment":"neg","date":"Sep 2020","month":"2020-09","likes":3},{"author":"Isabella Perez","stars":1,"text":"FIRST TIME. MY NAILS ARE BLEEDING. WORST ACRYLIC FILL EVER. I HAVE PULLED BACK OVER 5 TIMES BECAUSE MAIN LADY HAS BEEN RUSHING AND HURTING ME.","staff":[],"sentiment":"neg","date":"Oct 2019","month":"2019-10","likes":2},{"author":"Shva Rozman","stars":1,"text":"This place is awful, the staff are really rude and pushy. They talk behind the customer's back in their own language. I don't have to worry about going back there.","staff":[],"sentiment":"neg","date":"Jul 2018","month":"2018-07","likes":3},{"author":"Noemi Russo","stars":1,"text":"Worst experience ever. Nails came out crooked and I was charged $70. They treated me like it was MY FAULT. I can't believe it.","staff":[],"sentiment":"neg","date":"Jun 2018","month":"2018-06","likes":4},{"author":"Bruno Genovese","stars":1,"text":"Horrible place that just butchered my 11-yr old daughter. The lady removed acrylic nails without soaking them in acetone, but used a drill to thin them down.","staff":[],"sentiment":"neg","date":"Mar 2022","month":"2022-03","likes":1},{"author":"Yurayka Galindo","stars":1,"text":"First time here and i got gel nails and by the 3rd day they the color was pealing. I wouldn't recommend anyone since my sister had the same problem.","staff":[],"sentiment":"neg","date":"Jan 2019","month":"2019-01","likes":4},{"author":"Kathelyn Guerra","stars":1,"text":"They took three hours for me to do my nails. The employees were giving me faces. I got two times bleeding. They were yelling at me every time I moved.","staff":[],"sentiment":"neg","date":"Sep 2018","month":"2018-09","likes":3},{"author":"Erika Bustos","stars":2,"text":"Very disappointing, if you want a cute design that isn't basic on your nails DONT GO HERE. Two days after I got them done they got stained with a black watermark.","staff":[],"sentiment":"neg","date":"Feb 2019","month":"2019-02","likes":3}];
+
+const VOL=[["Nov'24",15],["Dec'24",28],["Jan'25",32],["Feb'25",30],["Mar'25",19],["Apr'25",20],["May'25",18],["Jun'25",33],["Jul'25",36],["Aug'25",56],["Sep'25",41],["Oct'25",35],["Nov'25",50],["Dec'25",40],["Jan'26",30],["Feb'26",30],["Mar'26",29],["Apr'26",19]];
+const RTG=[["Nov'24",4.4],["Dec'24",4.57],["Jan'25",5.0],["Feb'25",4.87],["Mar'25",5.0],["Apr'25",5.0],["May'25",5.0],["Jun'25",5.0],["Jul'25",5.0],["Aug'25",4.91],["Sep'25",5.0],["Oct'25",4.71],["Nov'25",4.68],["Dec'25",4.82],["Jan'26",4.87],["Feb'26",4.87],["Mar'26",4.66],["Apr'26",4.79]];
+const YOY=[["2016",4.0],["2017",4.11],["2018",3.29],["2019",3.53],["2020",4.4],["2021",3.47],["2022",3.0],["2023",3.22],["2024",4.8],["2025",4.9],["2026",4.8]];
+const STAFF_COUNTS={MT:156,Tracy:83,Jay:46,Anna:35,Tammy:24,Zen:20,Lisa:19,Wynn:17,Quincy:3,Amy:2,Helen:1};
+const THEMES=[{t:"Staff warmth & friendliness",c:54},{t:"Would recommend / return",c:34},{t:"Complimentary drinks & snacks",c:21},{t:"VIP / luxury experience",c:20},{t:"Nail quality & results",c:19},{t:"Welcoming atmosphere",c:15},{t:"Wait time concerns",c:9}];
+const SVC=[["Pedicure",263],["Manicure",150],["Foot massages",76],["Nail art",70],["Gel manicures",62],["Nail extensions",56]];
+
+// ── Scroll reveal ──────────────────────────────────────────────────
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('up'); io.unobserve(e.target); } });
+}, { threshold:.12 });
+document.querySelectorAll('.reveal,.reveal-scale,.reveal-left,.reveal-right').forEach(el => io.observe(el));
+
+// ── Progress bar ──────────────────────────────────────────────────
+window.addEventListener('scroll', () => {
+  const s = document.documentElement.scrollTop;
+  const h = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  document.getElementById('progress').style.width = (s/h*100)+'%';
+});
+
+// ── Counter animation ─────────────────────────────────────────────
+const cio = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(!e.isIntersecting) return;
+    const el = e.target, target = parseInt(el.dataset.target);
+    let start=0, dur=1600, startTime=null;
+    function step(ts){
+      if(!startTime) startTime=ts;
+      const p = Math.min((ts-startTime)/dur,1);
+      el.textContent = Math.floor(p*target)+(p>=1?'+':'');
+      if(p<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+    cio.unobserve(el);
+  });
+}, {threshold:.5});
+document.querySelectorAll('.count-anim').forEach(el => cio.observe(el));
+
+// ── Chart config ──────────────────────────────────────────────────
+const gridColor = 'rgba(255,255,255,.05)';
+
+function initCharts(){
+  const TT2 = {
+    backgroundColor:'#1a1420',
+    titleColor:'#e8c98a',
+    bodyColor:'#d0c4d8',
+    borderColor:'rgba(201,169,110,.3)',
+    borderWidth:1, padding:12, cornerRadius:8,
+    displayColors:false,
+    callbacks:{}
+  };
+
+  // Volume
+  new Chart(document.getElementById('volChart').getContext('2d'),{
+    type:'line',
+    data:{labels:VOL.map(d=>d[0]),datasets:[{
+      data:VOL.map(d=>d[1]),
+      borderColor:'#c23558',backgroundColor:'rgba(194,53,88,.1)',
+      borderWidth:2.5,
+      pointRadius:5, pointHoverRadius:8,
+      pointBackgroundColor:'#c23558', pointBorderColor:'#1a1420', pointBorderWidth:2,
+      fill:true,tension:.4
+    }]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:false},tooltip:{...TT2,callbacks:{label:c=>` ${c.raw} reviews`}}},
+      scales:{
+        x:{grid:{color:gridColor},ticks:{color:'#b0a4b8',font:{size:10,family:'DM Sans'},maxRotation:45}},
+        y:{
+          grid:{color:gridColor},
+          ticks:{color:'#b0a4b8',font:{size:10,family:'DM Sans'}},
+          title:{display:true,text:'# Reviews',color:'#b0a4b8',font:{size:11,family:'DM Sans'}}
+        }
+      }
+    }
+  });
+
+  // Rating trend
+  new Chart(document.getElementById('ratingChart').getContext('2d'),{
+    type:'line',
+    data:{labels:RTG.map(d=>d[0]),datasets:[{
+      data:RTG.map(d=>d[1]),
+      borderColor:'#c9a96e',backgroundColor:'rgba(201,169,110,.09)',
+      borderWidth:2.5,
+      pointRadius:5, pointHoverRadius:8,
+      pointBackgroundColor:'#c9a96e', pointBorderColor:'#1a1420', pointBorderWidth:2,
+      fill:true,tension:.4
+    }]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:false},tooltip:{...TT2,callbacks:{label:c=>` ${c.raw} ★`}}},
+      scales:{
+        x:{grid:{color:gridColor},ticks:{color:'#b0a4b8',font:{size:10,family:'DM Sans'},maxRotation:45}},
+        y:{
+          min:3.8,max:5.1,
+          grid:{color:gridColor},
+          ticks:{color:'#b0a4b8',font:{size:10,family:'DM Sans'}},
+          title:{display:true,text:'Avg Rating',color:'#b0a4b8',font:{size:11,family:'DM Sans'}}
+        }
+      }
+    }
+  });
+
+  // YoY
+  new Chart(document.getElementById('yoyChart').getContext('2d'),{
+    type:'bar',
+    data:{labels:YOY.map(d=>d[0]),datasets:[{
+      data:YOY.map(d=>d[1]),
+      backgroundColor:YOY.map(d=>d[1]>=4.5?'#9b2b45':d[1]>=4?'#c9a96e':'#4a4050'),
+      borderRadius:4,borderWidth:0,
+      hoverBackgroundColor:YOY.map(d=>d[1]>=4.5?'#c23558':d[1]>=4?'#e8c98a':'#6a6078')
+    }]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:false},tooltip:{...TT2,callbacks:{label:c=>` ${c.raw} ★ avg`}}},
+      scales:{
+        x:{grid:{color:gridColor},ticks:{color:'#b0a4b8',font:{size:10,family:'DM Sans'}}},
+        y:{
+          min:0,max:5.5,
+          grid:{color:gridColor},
+          ticks:{color:'#b0a4b8',font:{size:10,family:'DM Sans'}},
+          title:{display:true,text:'Avg Rating',color:'#b0a4b8',font:{size:11,family:'DM Sans'}}
+        }
+      }
+    }
+  });
+
+  // Donut
+  new Chart(document.getElementById('donutChart').getContext('2d'),{
+    type:'doughnut',
+    data:{labels:['Positive','Neutral','Critical'],datasets:[{data:[90.5,3.1,6.4],backgroundColor:['#2d6a4f','#9a6e2a','#9b2b45'],borderWidth:0,hoverOffset:8}]},
+    options:{responsive:false,cutout:'72%',plugins:{legend:{display:false},tooltip:{...TT2,callbacks:{label:c=>` ${c.raw}%`}}}}
+  });
+
+  // Stars
+  new Chart(document.getElementById('starChart').getContext('2d'),{
+    type:'bar',
+    data:{labels:['1★','2★','3★','4★','5★'],datasets:[{
+      data:[40,8,7,15,667],
+      backgroundColor:['#4a2535','#5a3040','#7a5030','#c9a96e','#9b2b45'],
+      borderRadius:4,borderWidth:0
+    }]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:false},tooltip:{...TT2,callbacks:{label:c=>` ${c.raw} reviews`}}},
+      scales:{
+        x:{grid:{color:gridColor},ticks:{color:'#b0a4b8',font:{size:11,family:'DM Sans'}}},
+        y:{
+          grid:{color:gridColor},
+          ticks:{color:'#b0a4b8',font:{size:10,family:'DM Sans'}},
+          title:{display:true,text:'Reviews',color:'#b0a4b8',font:{size:11,family:'DM Sans'}}
+        }
+      }
+    }
+  });
+
+  // Staff
+  const topS=Object.entries(STAFF_COUNTS).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  new Chart(document.getElementById('staffChart').getContext('2d'),{
+    type:'bar',
+    data:{labels:topS.map(s=>s[0]),datasets:[{data:topS.map(s=>s[1]),backgroundColor:'#9b2b45',hoverBackgroundColor:'#c23558',borderRadius:4,borderWidth:0}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,indexAxis:'y',
+      interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:false},tooltip:{...TT2,callbacks:{label:c=>` ${c.raw} mentions`}}},
+      scales:{
+        x:{
+          grid:{color:gridColor},
+          ticks:{color:'#b0a4b8',font:{size:10,family:'DM Sans'}},
+          title:{display:true,text:'Mentions',color:'#b0a4b8',font:{size:11,family:'DM Sans'}}
+        },
+        y:{grid:{display:false},ticks:{color:'#e8c98a',font:{size:11,family:'DM Sans'}}}
+      }
+    }
+  });
+
+  // Services
+  new Chart(document.getElementById('svcChart').getContext('2d'),{
+    type:'bar',
+    data:{labels:SVC.map(s=>s[0]),datasets:[{data:SVC.map(s=>s[1]),backgroundColor:'#c9a96e',hoverBackgroundColor:'#e8c98a',borderRadius:4,borderWidth:0}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,indexAxis:'y',
+      interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:false},tooltip:{...TT2,callbacks:{label:c=>` ${c.raw} reviews`}}},
+      scales:{
+        x:{
+          grid:{color:gridColor},
+          ticks:{color:'#b0a4b8',font:{size:10,family:'DM Sans'}},
+          title:{display:true,text:'Reviews',color:'#b0a4b8',font:{size:11,family:'DM Sans'}}
+        },
+        y:{grid:{display:false},ticks:{color:'#b0a4b8',font:{size:10,family:'DM Sans'}}}
+      }
+    }
+  });
+}
+
+// ── Theme bars ─────────────────────────────────────────────────────
+function buildThemes(){
+  const max=THEMES[0].c;
+  document.getElementById('themesBars').innerHTML=THEMES.map(t=>`
+    <div>
+      <div class="hb-top"><span class="hb-name">${t.t}</span><span class="hb-count">${t.c}</span></div>
+      <div class="hb-track"><div class="hb-fill" data-w="${Math.round((t.c/max)*100)}%"></div></div>
+    </div>`).join('');
+  setTimeout(()=>{document.querySelectorAll('.hb-fill').forEach(el=>el.style.width=el.dataset.w);},400);
+}
+
+// ── Staff filter ───────────────────────────────────────────────────
+let activeStaff=null;
+function buildStaffFilter(){
+  const mentioned=Object.keys(STAFF_COUNTS).filter(s=>REVIEWS.some(r=>r.staff.includes(s)));
+  document.getElementById('staffTabs').innerHTML=
+    `<button class="stab all on" onclick="filterStaff(null,this)">All <span class="sbadge">${REVIEWS.length}</span></button>`+
+    mentioned.map(s=>`<button class="stab" onclick="filterStaff('${s}',this)">${s} <span class="sbadge">${STAFF_COUNTS[s]}</span></button>`).join('');
+  renderFeed(null);
+}
+function filterStaff(name,btn){
+  activeStaff=name;
+  document.querySelectorAll('.stab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  renderFeed(name);
+}
+function hlName(t,n){ return t.replace(new RegExp(`\\b(${n})\\b`,'gi'),'<span class="hl">$1</span>'); }
+function starStr(n){ return `<span class="star-f">${'★'.repeat(n)}</span><span class="star-e">${'☆'.repeat(5-n)}</span>`; }
+function sentTag(s){ return `<span class="tag tag-${s}">${s==='pos'?'Pos':s==='neg'?'Crit':'Neu'}</span>`; }
+function renderFeed(name){
+  const list=name?REVIEWS.filter(r=>r.staff.includes(name)):REVIEWS.slice(0,25);
+  document.getElementById('feedMeta').textContent=name?`${list.length} reviews mention ${name}`:`Showing 25 recent — use table below for full browse`;
+  document.getElementById('reviewFeed').innerHTML=list.map(r=>`
+    <div class="rcard ${name?'hi':''} ${r.sentiment==='neg'?'neg':''}">
+      <div class="rmeta">
+        <span class="rauthor">${r.author}${sentTag(r.sentiment)}</span>
+        <span class="rright">${starStr(r.stars)} <span style="font-size:11px;color:var(--muted)">${r.date}</span></span>
+      </div>
+      <div class="rbody">${name&&r.text?hlName(r.text,name):r.text||'<em style="color:var(--muted2)">No text</em>'}</div>
+    </div>`).join('');
+}
+
+// ── Table ──────────────────────────────────────────────────────────
+let tblFiltered=[...REVIEWS],tblPage=1,sortCol=null,sortDir=-1;
+const PS=20;
+function tblFilter(){
+  const q=document.getElementById('tblSearch').value.toLowerCase();
+  const star=document.getElementById('tblStar').value;
+  const sent=document.getElementById('tblSent').value;
+  const staff=document.getElementById('tblStaff').value;
+  const year=document.getElementById('tblYear').value;
+  tblFiltered=REVIEWS.filter(r=>{
+    if(star&&r.stars!==parseInt(star)) return false;
+    if(sent&&r.sentiment!==sent) return false;
+    if(staff&&!r.staff.includes(staff)) return false;
+    if(year&&!r.date.includes(year)) return false;
+    if(q&&!r.text?.toLowerCase().includes(q)&&!r.author.toLowerCase().includes(q)&&!r.staff.join(' ').toLowerCase().includes(q)) return false;
+    return true;
+  });
+  if(sortCol) applySort();
+  tblPage=1; renderTable();
+}
+function tblSort(col){
+  sortCol===col?sortDir*=-1:(sortCol=col,sortDir=-1);
+  document.querySelectorAll('th').forEach(t=>t.classList.remove('sorted'));
+  event.target.closest('th').classList.add('sorted');
+  applySort(); renderTable();
+}
+function applySort(){ tblFiltered.sort((a,b)=>{ const av=a[sortCol],bv=b[sortCol]; return typeof av==='string'?av.localeCompare(bv)*sortDir:(av-bv)*sortDir; }); }
+function renderTable(){
+  const start=(tblPage-1)*PS;
+  const pageData=tblFiltered.slice(start,start+PS);
+  document.getElementById('tblCount').textContent=`${tblFiltered.length.toLocaleString()} reviews`;
+  document.getElementById('tblBody').innerHTML=pageData.map(r=>`
+    <tr>
+      <td class="td-author">${r.author}</td>
+      <td>${starStr(r.stars)}</td>
+      <td class="td-date">${r.date}</td>
+      <td style="max-width:300px;line-height:1.55">${r.text?r.text.slice(0,130)+(r.text.length>130?'…':''):'<em style="color:var(--muted2)">—</em>'}</td>
+      <td>${r.staff.map(s=>`<span class="staff-chip">${s}</span>`).join('')}</td>
+      <td>${sentTag(r.sentiment)}</td>
+      <td style="text-align:center;color:var(--muted);font-size:11px">${r.likes>0?'👍 '+r.likes:''}</td>
+    </tr>`).join('');
+  const total=Math.ceil(tblFiltered.length/PS);
+  const pages=[];
+  if(tblPage>1) pages.push(`<button class="pg-btn" onclick="gp(${tblPage-1})">‹</button>`);
+  for(let i=Math.max(1,tblPage-1);i<=Math.min(total,tblPage+1);i++) pages.push(`<button class="pg-btn ${i===tblPage?'active':''}" onclick="gp(${i})">${i}</button>`);
+  if(tblPage<total) pages.push(`<button class="pg-btn" onclick="gp(${tblPage+1})">›</button>`);
+  document.getElementById('tblPg').innerHTML=
+    `<span>${start+1}–${Math.min(start+PS,tblFiltered.length)} of ${tblFiltered.length.toLocaleString()}</span>
+     <div class="pg-btns">${pages.join('')}</div>`;
+}
+function gp(p){ tblPage=p; renderTable(); }
+
+// ── Init ──────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded',()=>{
+  if(window.innerWidth < 600) document.getElementById('tblScrollHint').style.display='block';
+  initCharts();
+  buildThemes();
+  buildStaffFilter();
+  renderTable();
+});
+</script>
+</body>
+</html>
