@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Fashion Nails & Spa VIP — Review Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --page-bg: #EDEEF3;
+  --card-bg: #FFFFFF;
+  --ink: #1F2230;
+  --ink-soft: #5C6170;
+  --ink-faint: #6B7280;
+  --line: #E7E9EF;
+
+  --header-1: #2E2050;
+  --header-2: #4A2E6B;
+
+  --c-blue: #3E6FD9;
+  --c-purple: #8B5FBF;
+  --c-rose: #E8637D;
+  --c-green: #2FAE72;
+  --c-amber: #F0A030;
+  --c-teal: #2BB6AE;
+
+  --good: #1F8F57;
+  --bad: #C43E5C;
+
+  --radius: 22px;
+  --radius-sm: 14px;
+  --shadow: 0 2px 6px rgba(30,20,50,.06), 0 10px 28px rgba(30,20,50,.10);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { overflow-x: hidden; }
+body {
+  background: var(--page-bg);
+  color: var(--ink);
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--c-blue); outline-offset: 2px; }
+
+.wrap { max-width: 520px; margin: 0 auto; }
+@media (min-width: 860px) { .wrap { max-width: 720px; } }
+
+/* ── Landing (header + hero fill most of the first screen on mobile) ── */
+.landing { display: flex; flex-direction: column; min-height: 75vh; }
+@media (min-width: 860px) { .landing { min-height: auto; } }
+.hero-wrap { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+/* ── Header ── */
+.app-header { background: linear-gradient(135deg, var(--header-1), var(--header-2)); border-radius: 0 0 28px 28px; padding-bottom: 64px; position: relative; overflow: hidden; }
+.app-header::before { content: ''; position: absolute; top: -70px; right: -70px; width: 240px; height: 240px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.09), transparent 70%); pointer-events: none; }
+.app-header-inner { max-width: 520px; margin: 0 auto; padding: 22px 20px 0; color: #fff; position: relative; z-index: 1; }
+@media (min-width: 860px) { .app-header-inner { max-width: 720px; padding: 28px 32px 0; } }
+.app-header-top { display: flex; justify-content: space-between; align-items: center; }
+.app-eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; opacity: .75; font-weight: 700; }
+.icon-btn { background: rgba(255,255,255,.14); border: none; color: #fff; width: 38px; height: 38px; border-radius: 50%; font-size: 16px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.icon-btn:hover { background: rgba(255,255,255,.24); }
+.app-title { font-size: 25px; font-weight: 800; margin-top: 6px; letter-spacing: -0.01em; }
+.app-sub { font-size: 14px; opacity: .85; margin-top: 4px; }
+
+/* ── Header range filter ── */
+.header-filter { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,.14); border-radius: 14px; padding: 2px 10px 2px 14px; margin-top: 18px; width: fit-content; max-width: 100%; }
+.header-filter .hf-icon { color: rgba(255,255,255,.85); flex-shrink: 0; }
+.header-filter select { background-color: transparent; border: none; color: #fff; font-weight: 700; padding: 10px 26px 10px 0; min-height: 40px; background-repeat: no-repeat; background-position: right 2px center; background-size: 12px 8px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23FFFFFF' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+.header-filter select option { color: var(--ink); }
+
+.page { padding: 0 16px 70px; }
+@media (min-width: 860px) { .page { padding: 0 32px 100px; } }
+
+/* ── Hero card (overlaps the header) ── */
+.hero-card { margin-top: -50px; padding: 24px 20px; position: relative; z-index: 2; }
+.page.page-hero { padding-bottom: 0; }
+.hero-stats { display: flex; align-items: flex-start; gap: 20px; flex-wrap: wrap; }
+.hero-stat { flex: 1; min-width: 140px; }
+.hero-stat.secondary { flex: 0 0 auto; text-align: right; }
+.hero-label { font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-faint); }
+.hero-value { font-size: 44px; font-weight: 800; line-height: 1; margin-top: 6px; letter-spacing: -0.01em; }
+.hero-value.secondary { font-size: 28px; color: var(--c-purple); }
+.hero-sub { font-size: 14px; color: var(--ink-soft); margin-top: 6px; }
+.hero-sub.up { color: var(--good); font-weight: 600; }
+.hero-sub.down { color: var(--bad); font-weight: 600; }
+.hero-donut-row { display: flex; align-items: center; justify-content: center; gap: 20px; margin-top: 26px; flex-wrap: wrap; }
+.hero-donut-box { position: relative; width: 160px; height: 160px; flex-shrink: 0; }
+@media (min-width: 860px) { .hero-donut-box { width: 190px; height: 190px; } }
+.donut-legend { display: flex; flex-direction: column; gap: 5px; flex: 0 1 150px; min-width: 120px; }
+.donut-legend-row { display: flex; align-items: center; gap: 7px; font-size: 13px; }
+.donut-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.donut-legend-row .dl-label { color: var(--ink-soft); }
+.donut-legend-row .dl-value { margin-left: auto; font-weight: 700; }
+
+/* ── Cards ── */
+.card { background: var(--card-bg); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); margin-bottom: 16px; }
+.card h2 { font-size: 15px; font-weight: 800; display: flex; align-items: center; gap: 9px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.dot.c-blue { background: var(--c-blue); } .dot.c-purple { background: var(--c-purple); }
+.dot.c-rose { background: var(--c-rose); } .dot.c-green { background: var(--c-green); }
+.dot.c-amber { background: var(--c-amber); } .dot.c-teal { background: var(--c-teal); }
+.card-sub { font-size: 13px; color: var(--ink-faint); margin: 2px 0 14px; }
+
+.card-grid { margin-bottom: 2px; }
+.card-grid > .card { margin-bottom: 16px; }
+
+/* ── Range select, filters ── */
+select, input[type="text"], input[type="number"] {
+  font-family: inherit; font-size: 16px; color: var(--ink);
+  background: var(--card-bg); border: 1px solid #D7DAE3; border-radius: var(--radius-sm);
+  padding: 10px 12px; max-width: 100%; min-height: 44px;
+}
+select {
+  cursor: pointer;
+  appearance: none; -webkit-appearance: none; -moz-appearance: none;
+  padding-right: 34px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%237B8191' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px 8px;
+}
+#rangeSelect { font-size: 16px; font-weight: 700; flex: 1; }
+input[type="text"]::placeholder { color: var(--ink-faint); }
+
+/* ── Disclosure (every card is collapsible) ── */
+details summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+details summary::-webkit-details-marker { display: none; }
+details summary::after { content: '▾'; color: var(--ink-faint); font-size: 14px; flex-shrink: 0; margin-left: 10px; transition: transform .15s; }
+details[open] summary::after { transform: rotate(180deg); }
+details summary h2 { flex: 1; }
+.disclosure-body { margin-top: 16px; }
+.card details[open] summary { margin-bottom: 0; }
+
+/* ── Donut + legend (reused for Stars / Sentiment) ── */
+.donut-card-row { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.donut-box { position: relative; width: 120px; height: 120px; flex-shrink: 0; }
+.donut-center { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; pointer-events: none; }
+.donut-center .n { font-size: 20px; font-weight: 800; }
+.donut-center .l { font-size: 9px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .04em; }
+
+/* ── Avatars & staff rows ── */
+.avatar { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 13px; flex-shrink: 0; }
+.stat-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.stat-row:last-child { border-bottom: none; }
+.stat-row .label { flex: 1; font-weight: 600; font-size: 14px; }
+.stat-row .detail { color: var(--ink-soft); font-size: 13px; }
+
+/* ── Quiet / empty state ── */
+.quiet-note { font-size: 13px; color: var(--ink-faint); font-style: italic; }
+
+/* ── Charts ── */
+.chart-box { position: relative; height: 190px; }
+@media (min-width: 860px) { .chart-box { height: 250px; } }
+
+/* ── Subsections & slim horizontal bars ── */
+.subhead { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-faint); margin: 20px 0 8px; }
+.disclosure-body .subhead:first-child { margin-top: 0; }
+.hbar-row { display: flex; align-items: center; gap: 10px; padding: 5px 0; font-size: 14px; }
+.hbar-label { flex: 0 0 96px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hbar-track { flex: 1; height: 8px; border-radius: 999px; background: var(--page-bg); overflow: hidden; }
+.hbar-fill { display: block; height: 100%; border-radius: 999px; }
+.hbar-value { flex: 0 0 auto; font-weight: 700; font-size: 13px; }
+
+/* ── Insight cards ── */
+.ilist { display: flex; flex-direction: column; gap: 14px; }
+.ilist .icard:not(:first-child) { padding-top: 14px; border-top: 1px solid var(--line); }
+.icard-title { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+.icard-month { font-weight: 500; color: var(--ink-faint); }
+.icard-body { font-size: 14px; color: var(--ink-soft); line-height: 1.6; }
+.icard-cites { margin-top: 6px; font-size: 11px; color: var(--ink-faint); }
+.icard-cites a { text-decoration: underline; margin-right: 8px; }
+
+/* ── Review list (no horizontal scroll at any width) ── */
+.tbl-controls { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+.tbl-search-row input { width: 100%; }
+.tbl-filter-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.tbl-filter-row select { flex: 1; min-width: 110px; }
+.tbl-clear { background: none; border: none; font-family: inherit; font-size: 12px; color: var(--c-blue); text-decoration: underline; cursor: pointer; padding: 0; white-space: nowrap; font-weight: 600; }
+.tbl-count { font-size: 12px; color: var(--ink-faint); width: 100%; text-align: right; }
+.rrow { display: flex; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.rrow:last-child { border-bottom: none; }
+.rrow-main { flex: 1; min-width: 0; }
+.rrow-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.rrow-name { font-weight: 700; font-size: 14px; }
+.rrow-meta { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-faint); flex-wrap: wrap; }
+.rrow-text { font-size: 14px; color: var(--ink-soft); margin-top: 4px; line-height: 1.55; word-break: break-word; }
+.rrow-toggle { background: none; border: none; font-family: inherit; font-size: 12px; font-weight: 700; color: var(--c-blue); text-decoration: underline; cursor: pointer; padding: 0; margin-left: 4px; }
+.star-f { color: var(--c-amber); } .star-e { color: var(--ink-faint); }
+.tag { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+.tag-positive { color: var(--good); background: rgba(31,143,87,.12); }
+.tag-negative { color: var(--bad); background: rgba(196,62,92,.12); }
+.tag-mixed { color: var(--c-amber); background: rgba(240,160,48,.14); }
+.tbl-pg { display: flex; flex-direction: column; gap: 10px; padding-top: 14px; font-size: 12px; color: var(--ink-soft); }
+.tbl-pg-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.pg-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+.pg-btn { background: var(--page-bg); border: none; border-radius: 8px; min-width: 32px; height: 32px; padding: 0 6px; font-family: inherit; font-size: 12px; font-weight: 600; color: var(--ink-soft); cursor: pointer; }
+.pg-btn.active { background: var(--c-blue); color: #fff; }
+.pg-btn:disabled { opacity: .35; cursor: not-allowed; }
+.pg-jump { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.pg-jump input[type="number"] { width: 64px; min-height: 36px; padding: 6px 8px; font-size: 14px; }
+.pg-jump .pg-btn { min-width: 48px; background: var(--c-blue); color: #fff; }
+.pg-jump .pg-btn:hover { background: var(--header-2); }
+
+/* ── Footer ── */
+footer { margin-top: 24px; padding: 0 4px; font-size: 12px; color: var(--ink-faint); text-align: center; }
+
+.loading { padding: 80px 0; color: var(--ink-faint); font-size: 13px; text-align: center; }
+</style>
+</head>
+<body>
+<div id="page">
+  <div class="loading" id="loadingNotice">Loading review data…</div>
+</div>
+
+<template id="dashboardTemplate">
+  <div class="landing">
+    <div class="app-header">
+      <div class="app-header-inner">
+        <div class="app-header-top">
+          <div>
+            <div class="app-eyebrow">Review Dashboard</div>
+            <div class="app-title">Fashion Nails & Spa VIP</div>
+            <div class="app-sub">★ <span id="heroRating"></span> all-time on Google</div>
+          </div>
+          <button class="icon-btn" id="refreshBtn" title="Refresh" aria-label="Refresh data">⟳</button>
+        </div>
+        <div class="header-filter">
+          <svg class="hf-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M2 6.5h12M5 1.5v2.2M11 1.5v2.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <select id="rangeSelect" aria-label="Date range">
+            <option value="this-month">This month</option>
+            <option value="last-3-months">Last 3 months</option>
+            <option value="last-6-months">Last 6 months</option>
+            <option value="ytd">Year to date</option>
+            <option value="last-12-months">Last 12 months</option>
+            <option value="all-time">All time</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="wrap">
+      <div class="hero-wrap">
+        <div class="page page-hero">
+          <div class="card hero-card">
+            <div class="hero-stats">
+              <div class="hero-stat">
+                <div class="hero-label" id="thisMonthSub"></div>
+                <div class="hero-value" id="tileThisMonth"></div>
+                <div class="hero-sub" id="tileThisMonthDelta"></div>
+              </div>
+              <div class="hero-stat secondary">
+                <div class="hero-label">Five-star</div>
+                <div class="hero-value secondary" id="tileFiveStar"></div>
+              </div>
+            </div>
+            <div class="hero-donut-row">
+              <div class="hero-donut-box" id="starsDonut"></div>
+              <div class="donut-legend" id="starsLegend"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="page">
+      <div class="card">
+        <details open>
+          <summary><h2><span class="dot c-blue"></span>Monthly reviews</h2></summary>
+          <div class="disclosure-body">
+            <div class="card-sub">Reviews per month, 12 months ending <span id="volWindowLabel"></span> · colored bars are the period you're viewing</div>
+            <div class="chart-box"><canvas id="volumeChart"></canvas></div>
+          </div>
+        </details>
+      </div>
+
+      <div class="card">
+        <details open>
+          <summary><h2><span class="dot c-teal"></span>Monthly average rating</h2></summary>
+          <div class="disclosure-body">
+            <div class="card-sub">Average stars per month over the same 12 months</div>
+            <div class="chart-box"><canvas id="ratingChart"></canvas></div>
+          </div>
+        </details>
+      </div>
+
+      <div class="card">
+        <details open>
+          <summary><h2><span class="dot c-purple"></span>Year over year rating</h2></summary>
+          <div class="disclosure-body">
+            <div class="card-sub">Average rating of all reviews received each year</div>
+            <div class="chart-box"><canvas id="yoyChart"></canvas></div>
+          </div>
+        </details>
+      </div>
+
+      <div class="card">
+        <details open>
+          <summary><h2><span class="dot c-green"></span>Ratings &amp; Sentiment</h2></summary>
+          <div class="disclosure-body">
+            <h3 class="subhead">Sentiment</h3>
+            <div class="card-sub" id="sentimentSub"></div>
+            <div class="donut-card-row" id="sentimentRow">
+              <div class="donut-box" id="sentimentDonut"></div>
+              <div class="donut-legend" id="sentimentLegend"></div>
+            </div>
+            <div class="quiet-note" id="sentimentSoon" style="display:none">Coming soon — sentiment for this period hasn't been analyzed yet.</div>
+
+            <h3 class="subhead">Top staff</h3>
+            <div id="staffBox"></div>
+
+            <h3 class="subhead">Top positive themes</h3>
+            <div class="quiet-note">Coming soon — what clients praise most, from AI analysis of the reviews.</div>
+
+            <h3 class="subhead">Top feedback themes</h3>
+            <div class="quiet-note">Coming soon — the most common suggestions and complaints.</div>
+          </div>
+        </details>
+      </div>
+
+      <div class="card">
+        <details open>
+          <summary><h2><span class="dot c-amber"></span>Client quotes</h2></summary>
+          <div class="disclosure-body">
+            <div class="quiet-note">Coming soon — a rotating selection of favorite client quotes, with who said it and when.</div>
+          </div>
+        </details>
+      </div>
+
+      <div class="card-grid">
+        <div class="card" id="insightsCard">
+          <details open>
+            <summary><h2><span class="dot c-amber"></span>Insights</h2></summary>
+            <div class="disclosure-body"><div class="ilist" id="insightsBox"></div></div>
+          </details>
+        </div>
+
+        <div class="card" id="recommendationsCard">
+          <details open>
+            <summary><h2><span class="dot c-blue"></span>Recommendations</h2></summary>
+            <div class="disclosure-body"><div class="ilist" id="recommendationsBox"></div></div>
+          </details>
+        </div>
+      </div>
+
+      <div class="card">
+        <details open>
+          <summary><h2><span class="dot c-purple"></span>Review history</h2></summary>
+          <div class="disclosure-body">
+            <div class="card-sub">Browse, search and filter every review this salon has received</div>
+            <div class="tbl-controls">
+              <div class="tbl-search-row">
+                <input type="text" id="tblSearch" placeholder="Search reviews, names…">
+              </div>
+              <div class="tbl-filter-row">
+                <select id="tblSort">
+                  <option value="postedAt-desc">Newest first</option>
+                  <option value="postedAt-asc">Oldest first</option>
+                  <option value="stars-desc">Highest rated</option>
+                  <option value="stars-asc">Lowest rated</option>
+                </select>
+                <select id="tblStar"><option value="">All ★</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select>
+                <select id="tblSent" style="display:none"><option value="">All sentiment</option><option value="positive">Positive</option><option value="mixed">Neutral</option><option value="negative">Critical</option></select>
+                <select id="tblYear"><option value="">All years</option></select>
+                <button type="button" class="tbl-clear" id="tblClear">Clear filters</button>
+                <span class="tbl-count" id="tblCount"></span>
+              </div>
+            </div>
+            <div id="tblBody"></div>
+            <div class="tbl-pg" id="tblPg"></div>
+          </div>
+        </details>
+      </div>
+
+      <div class="card">
+        <details>
+          <summary><h2><span class="dot c-purple"></span>Since MT took over</h2></summary>
+          <div class="disclosure-body">
+            <div class="stat-row"><span class="label">Before</span><span class="detail" id="sinceMtBefore"></span></div>
+            <div class="stat-row"><span class="label">Since <span id="eraStartLabel"></span></span><span class="detail" id="sinceMtAfter"></span></div>
+          </div>
+        </details>
+      </div>
+
+      <footer>
+        <div id="footerSummary"></div>
+        <div>9000 Reseda Blvd #101, Northridge CA · (818) 998-7888</div>
+      </footer>
+    </div>
+  </div>
+</template>
+
+<script>
+Chart.defaults.devicePixelRatio = Math.max(window.devicePixelRatio || 1, 2);
+const PS = 20;
+const PALETTE = ["#3E6FD9", "#8B5FBF", "#E8637D", "#2FAE72", "#F0A030", "#2BB6AE"];
+let DATA = null;
+let tblFiltered = [];
+let tblPage = 1;
+let sortCol = "postedAt";
+let sortDir = -1;
+let hasAnyLabels = false;
+let expandedReviews = new Set();
+
+function fmtDate(iso) {
+  return new Date(iso).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+}
+function fmtMonth(m) {
+  const [y, mo] = m.split("-");
+  return new Date(Number(y), Number(mo) - 1, 1).toLocaleDateString("en-US", { year: "numeric", month: "long" });
+}
+function fmtMonthShort(m) {
+  const [y, mo] = m.split("-");
+  return new Date(Number(y), Number(mo) - 1, 1).toLocaleDateString("en-US", { year: "numeric", month: "short" });
+}
+function fmtRangeLabel(start, end) {
+  if (start === "0000-01") return "All time";
+  if (start === end) return fmtMonth(start);
+  return `${fmtMonthShort(start)} – ${fmtMonthShort(end)}`;
+}
+function shiftMonthStr(month, delta) {
+  const [y, m] = month.split("-").map(Number);
+  const d = new Date(Date.UTC(y, m - 1 + delta, 1));
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+function starStr(n) {
+  return `<span class="star-f">${"★".repeat(n)}</span><span class="star-e">${"☆".repeat(5 - n)}</span>`;
+}
+function sentTag(s) {
+  if (!s) return '<span style="color:var(--ink-faint)">—</span>';
+  const label = s === "positive" ? "Positive" : s === "negative" ? "Critical" : "Neutral";
+  return `<span class="tag tag-${s}">${label}</span>`;
+}
+function toggleCard(id, visible) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = visible ? "" : "none";
+}
+function avatarColor(name) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
+  return PALETTE[hash % PALETTE.length];
+}
+function avatarInitial(name) {
+  return (name || "?").trim().charAt(0).toUpperCase() || "?";
+}
+
+/** Renders a crisp SVG donut + a colored legend list, reused for Stars and Sentiment. */
+function renderDonut(boxId, legendId, items) {
+  const total = items.reduce((sum, i) => sum + i.value, 0);
+  const box = document.getElementById(boxId);
+  const legendEl = document.getElementById(legendId);
+  if (!total) {
+    legendEl.innerHTML = '<div class="quiet-note">No data in this period.</div>';
+    box.style.visibility = "hidden";
+    return;
+  }
+  box.style.visibility = "visible";
+  items = items.filter((i) => i.value > 0);
+  legendEl.innerHTML = items
+    .map((i) => `<div class="donut-legend-row"><span class="donut-dot" style="background:${i.color}"></span><span class="dl-label">${i.label}</span><span class="dl-value">${Math.round((i.value / total) * 100)}%</span></div>`)
+    .join("");
+  let offset = 25;
+  let segs = "";
+  for (const i of items) {
+    const pct = (i.value / total) * 100;
+    segs += `<circle r="15.915" cx="21" cy="21" fill="none" stroke="${i.color}" stroke-width="7" stroke-dasharray="${pct} ${100 - pct}" stroke-dashoffset="${offset}"/>`;
+    offset -= pct;
+  }
+  const label = items.map((i) => `${i.label} ${Math.round((i.value / total) * 100)}%`).join(", ");
+  box.innerHTML = `<svg viewBox="0 0 42 42" role="img" aria-label="${label}" style="width:100%;height:100%">${segs}</svg>`;
+}
+
+async function loadRange(range) {
+  const url = range ? `/api/data?range=${range}` : "/api/data";
+  const res = await fetch(url);
+  if (res.status === 401) {
+    location.reload();
+    return new Promise(() => {});
+  }
+  if (!res.ok) throw new Error(`/api/data failed: ${res.status}`);
+  return res.json();
+}
+
+function renderShell() {
+  const tpl = document.getElementById("dashboardTemplate");
+  document.getElementById("page").innerHTML = "";
+  document.getElementById("page").appendChild(tpl.content.cloneNode(true));
+}
+
+function render(data) {
+  DATA = data;
+  const m = data.metrics;
+
+  const rangeLabel = fmtRangeLabel(data.rangeStart, data.rangeEnd);
+  const allTimeStars = ((m.sinceMt.avgRating ?? 0) * m.sinceMt.count + (m.sinceMt.avgRatingBefore ?? 0) * m.sinceMt.countBefore) / m.reviewCounts.allTime || 0;
+  document.getElementById("heroRating").textContent = allTimeStars.toFixed(2);
+  document.getElementById("refreshBtn").onclick = () => loadRange(DATA.range).then(render);
+
+  const rangeSelect = document.getElementById("rangeSelect");
+  rangeSelect.querySelectorAll("optgroup").forEach((g) => g.remove());
+  const byYear = {};
+  for (const mo of data.availableMonths) (byYear[mo.slice(0, 4)] ??= []).unshift(mo);
+  for (const y of Object.keys(byYear).sort().reverse()) {
+    const g = document.createElement("optgroup");
+    g.label = y;
+    g.innerHTML = byYear[y].map((mo) => `<option value="${mo}">${fmtMonth(mo)}</option>`).join("");
+    rangeSelect.appendChild(g);
+  }
+  rangeSelect.value = data.range;
+  rangeSelect.onchange = () => loadRange(rangeSelect.value).then(render);
+
+  document.getElementById("tileFiveStar").textContent = `${Math.round(m.fiveStarShare.period)}%`;
+
+  document.getElementById("thisMonthSub").textContent = `${rangeLabel.toUpperCase()} · REVIEWS`;
+  const change = m.reviewCounts.change;
+  document.getElementById("tileThisMonth").textContent = m.reviewCounts.period.toLocaleString();
+  const deltaEl = document.getElementById("tileThisMonthDelta");
+  if (data.range === "all-time") {
+    deltaEl.textContent = "";
+  } else {
+    const [sy, sm] = data.rangeStart.split("-").map(Number);
+    const [ey, em] = data.rangeEnd.split("-").map(Number);
+    const months = (ey - sy) * 12 + (em - sm) + 1;
+    const priorEnd = shiftMonthStr(data.rangeStart, -1);
+    const priorLabel = fmtRangeLabel(shiftMonthStr(priorEnd, -(months - 1)), priorEnd);
+    deltaEl.textContent =
+      change > 0 ? `${change} more than ${priorLabel}` : change < 0 ? `${-change} fewer than ${priorLabel}` : `Same as ${priorLabel}`;
+  }
+  deltaEl.className = `hero-sub ${change > 0 ? "up" : change < 0 ? "down" : ""}`;
+
+  document.getElementById("sinceMtBefore").textContent = m.sinceMt.avgRatingBefore != null ? `${m.sinceMt.avgRatingBefore}★, ${m.sinceMt.countBefore.toLocaleString()} reviews` : "—";
+  document.getElementById("eraStartLabel").textContent = fmtMonth(data.eraStart.slice(0, 7));
+  document.getElementById("sinceMtAfter").textContent = m.sinceMt.avgRating != null ? `${m.sinceMt.avgRating}★, ${m.sinceMt.count.toLocaleString()} reviews` : "—";
+
+  document.getElementById("footerSummary").textContent = `Fashion Nails & Spa VIP · ${m.reviewCounts.allTime.toLocaleString()} Google reviews`;
+
+  hasAnyLabels = m.hasLabels;
+  document.getElementById("tblSent").style.display = hasAnyLabels ? "" : "none";
+
+  const dist = m.starDistributionPeriod;
+  renderDonut(
+    "starsDonut",
+    "starsLegend",
+    ["5", "4", "3", "2", "1"].map((k, i) => ({ label: `${k}★`, value: dist[k], color: PALETTE[i] })),
+  );
+
+  const hasSentiment = m.sentimentPeriod !== null;
+  document.getElementById("sentimentRow").style.display = hasSentiment ? "" : "none";
+  document.getElementById("sentimentSoon").style.display = hasSentiment ? "none" : "";
+  document.getElementById("sentimentSub").textContent = hasSentiment ? `For ${rangeLabel}` : "";
+  if (hasSentiment) {
+    const s = m.sentimentPeriod;
+    renderDonut("sentimentDonut", "sentimentLegend", [
+      { label: "Positive", value: s.positive, color: "#2FAE72" },
+      { label: "Neutral", value: s.mixed, color: "#F0A030" },
+      { label: "Critical", value: s.negative, color: "#E8637D" },
+    ]);
+  }
+
+  renderStaff(m.staffMentionsPeriod);
+
+  const hasInsights = !!(data.insights && data.insights.length);
+  toggleCard("insightsCard", hasInsights);
+  if (hasInsights) renderInsights(data.insights, "insightsBox");
+
+  const hasRecs = !!(data.recommendations && data.recommendations.length);
+  toggleCard("recommendationsCard", hasRecs);
+  if (hasRecs) renderInsights(data.recommendations, "recommendationsBox");
+
+  renderCharts(m);
+
+  setupTableControls();
+  tblFiltered = data.reviews.slice();
+  applySortAndFilter();
+}
+
+function renderStaff(staffMentions) {
+  const box = document.getElementById("staffBox");
+  if (!staffMentions) {
+    box.innerHTML = '<div class="quiet-note">Coming soon — staff mentions for this period haven’t been analyzed yet.</div>';
+    return;
+  }
+  if (!staffMentions.length) {
+    box.innerHTML = '<div class="quiet-note">No staff mentions in this period.</div>';
+    return;
+  }
+  const top = staffMentions
+    .map((s) => ({ ...s, total: s.praised + s.criticized }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 6);
+  const max = top[0].total;
+  box.innerHTML = top
+    .map(
+      (s) => `
+    <div class="hbar-row" title="${s.praised} praised · ${s.criticized} criticized">
+      <span class="hbar-label">${s.name}</span>
+      <span class="hbar-track"><span class="hbar-fill" style="width:${(s.total / max) * 100}%;background:${avatarColor(s.name)}"></span></span>
+      <span class="hbar-value">${s.total}</span>
+    </div>`,
+    )
+    .join("");
+}
+
+function renderInsights(items, elId) {
+  const box = document.getElementById(elId);
+  const showMonth = DATA.rangeStart !== DATA.rangeEnd;
+  box.innerHTML = items
+    .map(
+      (i) => `
+    <div class="icard">
+      <div class="icard-title">${i.title}${showMonth ? ` <span class="icard-month">· ${fmtMonth(i.month)}</span>` : ""}</div>
+      <div class="icard-body">${i.body}</div>
+      <div class="icard-cites">${(i.citedReviewIds || []).map((id) => `<a href="#review-${id}">${id}</a>`).join("")}</div>
+    </div>`,
+    )
+    .join("");
+}
+
+const eraMarkerPlugin = {
+  id: "eraMarker",
+  afterDraw(chart, _args, opts) {
+    if (!opts || !opts.month) return;
+    const idx = chart.data.labels.indexOf(opts.month);
+    if (idx === -1) return;
+    const { ctx, scales } = chart;
+    const x = scales.x.getPixelForValue(idx);
+    ctx.save();
+    ctx.strokeStyle = "#8B5FBF";
+    ctx.globalAlpha = 0.5;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(x, scales.y.top);
+    ctx.lineTo(x, scales.y.bottom);
+    ctx.stroke();
+    ctx.restore();
+  },
+};
+Chart.register(eraMarkerPlugin);
+
+let chartInstances = [];
+const TOOLTIP_STYLE = { backgroundColor: "#1F2230", padding: 10, cornerRadius: 8, titleFont: { family: "Instrument Sans" }, bodyFont: { family: "Instrument Sans" } };
+const AXIS_FONT = { size: 11, family: "Instrument Sans" };
+function monthTicks() {
+  return {
+    color: "#7B8191",
+    font: AXIS_FONT,
+    maxRotation: 0,
+    callback(value) {
+      const [y, mo] = this.getLabelForValue(value).split("-");
+      const name = new Date(Number(y), Number(mo) - 1, 1).toLocaleDateString("en-US", { month: "short" });
+      return mo === "01" || value === 0 ? [name, y] : name;
+    },
+  };
+}
+
+function renderCharts(m) {
+  chartInstances.forEach((c) => c.destroy());
+  chartInstances = [];
+  const eraMonth = DATA.eraStart.slice(0, 7);
+  const latestTrendMonth = m.trend.length ? m.trend[m.trend.length - 1].month : DATA.rangeEnd;
+  const windowEnd = DATA.rangeEnd > latestTrendMonth ? latestTrendMonth : DATA.rangeEnd;
+  const windowStart = shiftMonthStr(windowEnd, -11);
+  const trend = m.trend.filter((d) => d.month >= windowStart && d.month <= windowEnd);
+  document.getElementById("volWindowLabel").textContent = fmtMonth(windowEnd);
+  const months = trend.map((d) => d.month);
+
+  chartInstances.push(new Chart(document.getElementById("volumeChart"), {
+    type: "bar",
+    data: {
+      labels: months,
+      datasets: [{ data: trend.map((d) => d.count), backgroundColor: trend.map((d) => (d.month >= DATA.rangeStart && d.month <= DATA.rangeEnd ? "#4A2E6B" : "#D7DAE3")), borderRadius: 4 }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { ...TOOLTIP_STYLE, callbacks: { title: (items) => fmtMonth(items[0].label), label: (i) => `${i.parsed.y} reviews` } },
+        eraMarker: { month: eraMonth },
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: monthTicks() },
+        y: { beginAtZero: true, grid: { color: "#E7E9EF" }, ticks: { color: "#7B8191", font: AXIS_FONT, precision: 0 } },
+      },
+    },
+  }));
+
+  chartInstances.push(new Chart(document.getElementById("ratingChart"), {
+    type: "line",
+    data: {
+      labels: months,
+      datasets: [{ data: trend.map((d) => d.avgRating), borderColor: "#2BB6AE", borderWidth: 3, pointRadius: 3, pointBackgroundColor: "#2BB6AE", pointBorderColor: "#fff", pointBorderWidth: 1.5, backgroundColor: "rgba(43,182,174,.16)", fill: true, tension: 0.35, spanGaps: true }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { ...TOOLTIP_STYLE, callbacks: { title: (items) => fmtMonth(items[0].label), label: (i) => `${i.parsed.y} stars average` } },
+        eraMarker: { month: eraMonth },
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: monthTicks() },
+        y: { min: 1, max: 5, grid: { color: "#E7E9EF" }, ticks: { color: "#7B8191", font: AXIS_FONT } },
+      },
+    },
+  }));
+
+  const byYear = {};
+  for (const r of DATA.reviews) {
+    const y = r.postedAt.slice(0, 4);
+    byYear[y] ??= { sum: 0, n: 0 };
+    byYear[y].sum += r.stars;
+    byYear[y].n++;
+  }
+  const years = Object.keys(byYear).sort();
+  chartInstances.push(new Chart(document.getElementById("yoyChart"), {
+    type: "bar",
+    data: { labels: years, datasets: [{ data: years.map((y) => byYear[y].sum / byYear[y].n), backgroundColor: "#8B5FBF", borderRadius: 4 }] },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { ...TOOLTIP_STYLE, callbacks: { label: (i) => `${i.parsed.y.toFixed(2)} stars · ${byYear[years[i.dataIndex]].n.toLocaleString()} reviews` } },
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: "#7B8191", font: AXIS_FONT } },
+        y: { min: 1, max: 5, grid: { color: "#E7E9EF" }, ticks: { color: "#7B8191", font: AXIS_FONT } },
+      },
+    },
+  }));
+}
+
+function setupTableControls() {
+  const years = [...new Set(DATA.reviews.map((r) => new Date(r.postedAt).getFullYear()))].sort((a, b) => b - a);
+  const yearSelect = document.getElementById("tblYear");
+  yearSelect.innerHTML = '<option value="">All years</option>' + years.map((y) => `<option>${y}</option>`).join("");
+
+  document.getElementById("tblSearch").oninput = applySortAndFilter;
+  document.getElementById("tblStar").onchange = applySortAndFilter;
+  document.getElementById("tblSent").onchange = applySortAndFilter;
+  yearSelect.onchange = applySortAndFilter;
+  document.getElementById("tblSort").onchange = (e) => {
+    const [col, dir] = e.target.value.split("-");
+    sortCol = col;
+    sortDir = dir === "desc" ? -1 : 1;
+    applySortAndFilter();
+  };
+  document.getElementById("tblClear").onclick = () => {
+    document.getElementById("tblSearch").value = "";
+    document.getElementById("tblStar").value = "";
+    document.getElementById("tblSent").value = "";
+    yearSelect.value = "";
+    applySortAndFilter();
+  };
+  document.getElementById("tblBody").onclick = (e) => {
+    const btn = e.target.closest(".rrow-toggle");
+    if (!btn) return;
+    const id = btn.dataset.id;
+    expandedReviews.has(id) ? expandedReviews.delete(id) : expandedReviews.add(id);
+    renderTable();
+  };
+}
+
+function applySortAndFilter() {
+  const q = document.getElementById("tblSearch").value.toLowerCase();
+  const star = document.getElementById("tblStar").value;
+  const sent = document.getElementById("tblSent").value;
+  const year = document.getElementById("tblYear").value;
+
+  tblFiltered = DATA.reviews.filter((r) => {
+    if (star && r.stars !== Number(star)) return false;
+    if (sent && r.sentiment !== sent) return false;
+    if (year && String(new Date(r.postedAt).getFullYear()) !== year) return false;
+    if (q && !r.text?.toLowerCase().includes(q) && !r.reviewerName.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  tblFiltered.sort((a, b) => {
+    const av = a[sortCol], bv = b[sortCol];
+    return typeof av === "string" ? av.localeCompare(bv) * sortDir : (av - bv) * sortDir;
+  });
+  tblPage = 1;
+  renderTable();
+}
+
+function renderTable() {
+  const start = (tblPage - 1) * PS;
+  const pageData = tblFiltered.slice(start, start + PS);
+  document.getElementById("tblCount").textContent = `${tblFiltered.length.toLocaleString()} reviews`;
+  document.getElementById("tblBody").innerHTML = pageData
+    .map((r) => {
+      const full = r.text || "";
+      const isLong = full.length > 220;
+      const isExpanded = expandedReviews.has(r.reviewId);
+      const shown = isLong && !isExpanded ? full.slice(0, 220) + "…" : full;
+      const toggle = isLong
+        ? `<button type="button" class="rrow-toggle" data-id="${r.reviewId}">${isExpanded ? "Show less" : "Show more"}</button>`
+        : "";
+      const name = r.reviewerName || "—";
+      return `
+    <div class="rrow" id="review-${r.reviewId}">
+      <div class="avatar" style="background:${avatarColor(name)}">${avatarInitial(name)}</div>
+      <div class="rrow-main">
+        <div class="rrow-top">
+          <span class="rrow-name">${name}</span>
+          <span class="rrow-meta">${starStr(r.stars)} · ${fmtDate(r.postedAt)}${hasAnyLabels ? " · " + sentTag(r.sentiment) : ""}</span>
+        </div>
+        <div class="rrow-text">${shown || "—"}${toggle}</div>
+      </div>
+    </div>`;
+    })
+    .join("");
+  const total = Math.ceil(tblFiltered.length / PS) || 1;
+  const pages = [];
+  pages.push(`<button class="pg-btn" onclick="gp(1)" ${tblPage === 1 ? "disabled" : ""}>«</button>`);
+  pages.push(`<button class="pg-btn" onclick="gp(${tblPage - 1})" ${tblPage === 1 ? "disabled" : ""}>‹</button>`);
+  for (let i = Math.max(1, tblPage - 1); i <= Math.min(total, tblPage + 1); i++) pages.push(`<button class="pg-btn ${i === tblPage ? "active" : ""}" onclick="gp(${i})">${i}</button>`);
+  pages.push(`<button class="pg-btn" onclick="gp(${tblPage + 1})" ${tblPage === total ? "disabled" : ""}>›</button>`);
+  pages.push(`<button class="pg-btn" onclick="gp(${total})" ${tblPage === total ? "disabled" : ""}>»</button>`);
+  document.getElementById("tblPg").innerHTML = `
+    <div class="tbl-pg-row">
+      <span>${tblFiltered.length ? start + 1 : 0}–${Math.min(start + PS, tblFiltered.length)} of ${tblFiltered.length.toLocaleString()}</span>
+      <div class="pg-btns">${pages.join("")}</div>
+    </div>
+    ${
+      total > 1
+        ? `<div class="pg-jump">
+            <label for="pgJumpInput">Go to page</label>
+            <input type="number" id="pgJumpInput" min="1" max="${total}" value="${tblPage}">
+            <span>of ${total}</span>
+            <button type="button" class="pg-btn" id="pgJumpBtn">Go</button>
+          </div>`
+        : ""
+    }`;
+  if (total > 1) {
+    const jump = () => gp(Math.min(total, Math.max(1, Number(document.getElementById("pgJumpInput").value) || 1)));
+    document.getElementById("pgJumpBtn").onclick = jump;
+    document.getElementById("pgJumpInput").onkeydown = (e) => {
+      if (e.key === "Enter") jump();
+    };
+  }
+}
+function gp(p) { tblPage = p; renderTable(); }
+
+loadRange(null)
+  .then((data) => {
+    renderShell();
+    render(data);
+  })
+  .catch((err) => {
+    document.getElementById("loadingNotice").textContent = `Failed to load dashboard data: ${err.message}`;
+  });
+</script>
+</body>
+</html>
