@@ -156,6 +156,8 @@ ${batch.map((r) => `[${r.reviewId}] (${r.stars}★) ${(r.text || "").slice(0, MA
   const response = await client.messages.create({
     model: process.env.ANTHROPIC_MODEL!,
     max_tokens: 8000,
+    // Classification against a fixed schema doesn't need deep reasoning; this is the main cost lever.
+    output_config: { effort: "low" },
     tools: [LABEL_TOOL],
     tool_choice: { type: "auto" },
     system: "Use the label_reviews tool to return your analysis. Call it exactly once per batch, covering every review listed.",
