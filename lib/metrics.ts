@@ -19,12 +19,17 @@ export interface StaffMentionLabel {
   evidence: string;
 }
 
+export interface TopicLabel {
+  label: string;
+  sentiment: "positive" | "negative";
+}
+
 export interface LabelRow {
   reviewId: string;
   textHash: string;
   promptVersion: string;
   sentiment: "positive" | "mixed" | "negative";
-  topics: string[];
+  topics: TopicLabel[];
   staffMentions: StaffMentionLabel[];
   labeledAt: string;
   model: string;
@@ -50,6 +55,19 @@ export interface StaffMentionCount {
   neutral: number;
 }
 
+export interface ThemeCount {
+  label: string;
+  count: number;
+}
+
+export interface Quote {
+  reviewId: string;
+  reviewerName: string;
+  text: string;
+  stars: number;
+  postedAt: string;
+}
+
 export interface Metrics {
   rangeStart: string;
   rangeEnd: string;
@@ -61,6 +79,8 @@ export interface Metrics {
   starDistributionPeriod: Record<string, number>;
   sentimentPeriod: SentimentCounts | null;
   staffMentionsPeriod: StaffMentionCount[] | null;
+  themesPeriod: { positive: ThemeCount[]; feedback: ThemeCount[] } | null;
+  topQuotes: Quote[];
   hasLabels: boolean;
 }
 
@@ -173,6 +193,8 @@ export function computeMetrics(input: MetricsInput): Metrics {
     starDistributionPeriod: starDistribution(periodReviews),
     sentimentPeriod: hasLabels ? aggregateSentiment(periodReviews, labelByReviewId) : null,
     staffMentionsPeriod: hasLabels ? aggregateStaffMentions(periodReviews, labelByReviewId) : null,
+    themesPeriod: hasLabels ? aggregateThemes(periodReviews, labelByReviewId) : null,
+    topQuotes: pickTopQuotes(periodReviews),
     hasLabels,
   };
 }
@@ -212,6 +234,36 @@ function aggregateStaffMentions(reviews: ReviewRow[], labelByReviewId: Map<strin
   return [...counts.values()].sort(
     (a, b) => b.praised + b.criticized + b.neutral - (a.praised + a.criticized + a.neutral),
   );
+}
+
+function aggregateThemes(
+  reviews: ReviewRow[],
+  labelByReviewId: Map<string, LabelRow>,
+): { positive: ThemeCount[]; feedback: ThemeCount[] } {
+  const positive = new Map<string, number>();
+  const feedback = new Map<string, number>();
+  for (const r of reviews) {
+    const label = labelByReviewId.get(r.reviewId);
+    if (!label) continue;
+    for (const topic of label.topics) {
+      const bucket = topic.sentiment === "positive" ? positive : feedback;
+      bucket.set(topic.label, (bucket.get(topic.label) ?? 0) + 1);
+    }
+  }
+  const toSorted = (m: Map<string, number>): ThemeCount[] =>
+    [...m.entries()].map(([label, count]) => ({ label, count })).sort((a, b) => b.count - a.count);
+  return { positive: toSorted(positive), feedback: toSorted(feedback) };
+}
+
+/** Deterministic, non-AI pick of quotable reviews: 5-star and a substantive length, most recent first. */
+function pickTopQuotes(reviews: ReviewRow[], limit = 6): Quote[] {
+  const strict = reviews.filter((r) => r.stars === 5 && r.text.trim().length >= 60 && r.text.trim().length <= 400);
+  const strictIds = new Set(strict.map((r) => r.reviewId));
+  const loose = reviews.filter((r) => r.stars >= 4 && r.text.trim().length >= 40 && !strictIds.has(r.reviewId));
+  return [...strict, ...loose]
+    .sort((a, b) => b.postedAt.localeCompare(a.postedAt))
+    .slice(0, limit)
+    .map((r) => ({ reviewId: r.reviewId, reviewerName: r.reviewerName, text: r.text.trim(), stars: r.stars, postedAt: r.postedAt }));
 }
 
 export type RangePreset = "this-month" | "last-3-months" | "last-6-months" | "ytd" | "last-12-months" | "all-time";

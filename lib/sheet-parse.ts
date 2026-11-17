@@ -1,4 +1,4 @@
-import type { LabelRow, ReviewRow, StaffMentionLabel } from "./metrics";
+import type { LabelRow, ReviewRow, StaffMentionLabel, TopicLabel } from "./metrics";
 
 export function parseReviewRows(rows: string[][]): ReviewRow[] {
   return rows
@@ -26,7 +26,7 @@ export function parseLabelRows(rows: string[][]): LabelRow[] {
       textHash: r[1] ?? "",
       promptVersion: r[2] ?? "",
       sentiment: (r[3] as LabelRow["sentiment"]) ?? "neutral",
-      topics: parseJsonArray(r[4]),
+      topics: parseJsonArray(r[4]) as TopicLabel[],
       staffMentions: parseJsonArray(r[5]) as StaffMentionLabel[],
       labeledAt: r[6] ?? "",
       model: r[7] ?? "",

@@ -226,6 +226,54 @@ describe("computeMetrics", () => {
     expect(m.ownerReplyRate.period).toBe(50);
   });
 
+  it("aggregates themes by sentiment and ranks by count", () => {
+    const reviews = [
+      fakeReview({ reviewId: "r1" }),
+      fakeReview({ reviewId: "r2" }),
+      fakeReview({ reviewId: "r3" }),
+    ];
+    const labelWith = (reviewId: string, topics: { label: string; sentiment: "positive" | "negative" }[]) => ({
+      reviewId,
+      textHash: "hash1",
+      promptVersion: "v2",
+      sentiment: "positive" as const,
+      topics,
+      staffMentions: [],
+      labeledAt: "2025-01-16T00:00:00.000Z",
+      model: "test",
+    });
+    const m = metrics(reviews, { start: "2025-01", end: "2025-01" }, [
+      labelWith("r1", [{ label: "Friendly, welcoming staff", sentiment: "positive" }]),
+      labelWith("r2", [{ label: "Friendly, welcoming staff", sentiment: "positive" }, { label: "Long wait times", sentiment: "negative" }]),
+      labelWith("r3", [{ label: "Long wait times", sentiment: "negative" }]),
+    ]);
+    expect(m.themesPeriod).toEqual({
+      positive: [{ label: "Friendly, welcoming staff", count: 2 }],
+      feedback: [{ label: "Long wait times", count: 2 }],
+    });
+  });
+
+  it("picks quotable reviews: 5-star, substantive length, most recent first", () => {
+    const reviews = [
+      fakeReview({ reviewId: "short", postedAt: "2025-01-20T00:00:00.000Z", stars: 5, text: "Great!" }),
+      fakeReview({
+        reviewId: "good1",
+        postedAt: "2025-01-10T00:00:00.000Z",
+        stars: 5,
+        text: "I absolutely loved my experience here, the staff were wonderful and my nails turned out perfect every single time I visit.",
+      }),
+      fakeReview({
+        reviewId: "good2",
+        postedAt: "2025-01-15T00:00:00.000Z",
+        stars: 5,
+        text: "Such a relaxing atmosphere and the nail art was exactly what I asked for, highly recommend this place to everyone I know.",
+      }),
+      fakeReview({ reviewId: "lowstar", postedAt: "2025-01-18T00:00:00.000Z", stars: 2, text: "It was fine I guess, nothing special about the service at all honestly." }),
+    ];
+    const m = metrics(reviews, { start: "2025-01", end: "2025-01" });
+    expect(m.topQuotes.map((q) => q.reviewId)).toEqual(["good2", "good1"]);
+  });
+
   it("computes five-star share for the prior period alongside the current one", () => {
     const reviews = [
       fakeReview({ reviewId: "p1", postedAt: "2025-02-10T20:00:00.000Z", stars: 5 }),
