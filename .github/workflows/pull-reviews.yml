@@ -1,0 +1,23 @@
+name: Pull reviews
+
+on:
+  schedule:
+    - cron: "0 13 * * *" # 5am Pacific (America/Los_Angeles) daily, before business hours
+  workflow_dispatch: {} # lets you trigger a pull manually from the Actions tab
+
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm run pull
+        env:
+          APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
+          APIFY_ACTOR_ID: ${{ secrets.APIFY_ACTOR_ID }}
+          PLACE_URL: ${{ secrets.PLACE_URL }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          SHEET_ID: ${{ secrets.SHEET_ID }}
