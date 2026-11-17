@@ -33,6 +33,22 @@ export function parseLabelRows(rows: string[][]): LabelRow[] {
     }));
 }
 
+export interface RosterEntry {
+  name: string;
+  aliases: string[];
+  active: boolean;
+}
+
+export function parseRosterRows(rows: string[][]): RosterEntry[] {
+  return rows
+    .filter((r) => r[0])
+    .map((r) => ({
+      name: r[0] ?? "",
+      aliases: (r[1] ?? "").split(",").map((a) => a.trim()).filter(Boolean),
+      active: (r[2] ?? "true").toLowerCase() !== "false",
+    }));
+}
+
 export interface MonthlyAnalysisRow {
   month: string;
   insights: { title: string; body: string; citedReviewIds: string[] }[];
