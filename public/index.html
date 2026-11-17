@@ -164,6 +164,28 @@ details summary h2 { flex: 1; }
 .hbar-fill { display: block; height: 100%; border-radius: 999px; }
 .hbar-value { flex: 0 0 auto; font-weight: 700; font-size: 13px; }
 
+/* ── Theme bars (longer labels, so label sits above the bar instead of beside it) ── */
+.theme-row { padding: 8px 0; }
+.theme-row:not(:first-child) { border-top: 1px solid var(--line); padding-top: 10px; }
+.theme-label-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 5px; }
+.theme-label { font-size: 13px; font-weight: 600; }
+.theme-value { font-size: 12px; font-weight: 700; color: var(--ink-faint); flex-shrink: 0; }
+.theme-track { height: 7px; border-radius: 999px; background: var(--page-bg); overflow: hidden; }
+.theme-fill { display: block; height: 100%; border-radius: 999px; }
+
+/* ── Client quotes carousel ── */
+.quote-box { position: relative; padding: 6px 4px 4px 34px; min-height: 70px; }
+.quote-box::before { content: '\201C'; position: absolute; left: 0; top: -10px; font-size: 52px; font-weight: 800; color: var(--c-amber); opacity: .35; line-height: 1; font-family: Georgia, serif; }
+.quote-text { font-size: 15px; color: var(--ink); line-height: 1.55; font-style: italic; }
+.quote-byline { margin-top: 10px; font-size: 13px; color: var(--ink-soft); font-weight: 600; }
+.quote-byline .stars { color: var(--c-amber); font-weight: 400; margin-left: 6px; }
+.quote-nav { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 16px; }
+.quote-arrow { background: var(--page-bg); border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 16px; color: var(--ink-soft); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.quote-arrow:hover { background: var(--c-amber); color: #fff; }
+.quote-dots { display: flex; gap: 6px; }
+.quote-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--line); border: none; padding: 0; cursor: pointer; }
+.quote-dot.active { background: var(--c-amber); width: 16px; border-radius: 4px; }
+
 /* ── Insight cards ── */
 .ilist { display: flex; flex-direction: column; gap: 14px; }
 .ilist .icard:not(:first-child) { padding-top: 14px; border-top: 1px solid var(--line); }
@@ -314,10 +336,10 @@ footer { margin-top: 24px; padding: 0 4px; font-size: 12px; color: var(--ink-fai
             <div id="staffBox"></div>
 
             <h3 class="subhead">Top positive themes</h3>
-            <div class="quiet-note">Coming soon — what clients praise most, from AI analysis of the reviews.</div>
+            <div id="positiveThemesBox"></div>
 
             <h3 class="subhead">Top feedback themes</h3>
-            <div class="quiet-note">Coming soon — the most common suggestions and complaints.</div>
+            <div id="feedbackThemesBox"></div>
           </div>
         </details>
       </div>
@@ -326,7 +348,12 @@ footer { margin-top: 24px; padding: 0 4px; font-size: 12px; color: var(--ink-fai
         <details open>
           <summary><h2><span class="dot c-amber"></span>Client quotes</h2></summary>
           <div class="disclosure-body">
-            <div class="quiet-note">Coming soon — a rotating selection of favorite client quotes, with who said it and when.</div>
+            <div id="quoteBox"></div>
+            <div class="quote-nav" id="quoteNav" style="display:none">
+              <button type="button" class="quote-arrow" id="quotePrev" aria-label="Previous quote">&#8249;</button>
+              <div class="quote-dots" id="quoteDots"></div>
+              <button type="button" class="quote-arrow" id="quoteNext" aria-label="Next quote">&#8250;</button>
+            </div>
           </div>
         </details>
       </div>
@@ -562,6 +589,8 @@ function render(data) {
   }
 
   renderStaff(m.staffMentionsPeriod);
+  renderThemes(m.themesPeriod);
+  renderQuotes(m.topQuotes);
 
   const hasInsights = !!(data.insights && data.insights.length);
   toggleCard("insightsCard", hasInsights);
@@ -603,6 +632,74 @@ function renderStaff(staffMentions) {
     </div>`,
     )
     .join("");
+}
+
+function renderThemeList(boxId, items, emptyText, color) {
+  const box = document.getElementById(boxId);
+  if (!items.length) {
+    box.innerHTML = `<div class="quiet-note">${emptyText}</div>`;
+    return;
+  }
+  const top = items.slice(0, 5);
+  const max = top[0].count;
+  box.innerHTML = top
+    .map(
+      (t) => `
+    <div class="theme-row">
+      <div class="theme-label-row"><span class="theme-label">${t.label}</span><span class="theme-value">${t.count}</span></div>
+      <div class="theme-track"><span class="theme-fill" style="width:${(t.count / max) * 100}%;background:${color}"></span></div>
+    </div>`,
+    )
+    .join("");
+}
+
+function renderThemes(themesPeriod) {
+  if (!themesPeriod) {
+    document.getElementById("positiveThemesBox").innerHTML = '<div class="quiet-note">Coming soon — what clients praise most, from AI analysis of the reviews.</div>';
+    document.getElementById("feedbackThemesBox").innerHTML = '<div class="quiet-note">Coming soon — the most common suggestions and complaints.</div>';
+    return;
+  }
+  renderThemeList("positiveThemesBox", themesPeriod.positive, "No recurring themes in this period.", "#2FAE72");
+  renderThemeList("feedbackThemesBox", themesPeriod.feedback, "No recurring feedback themes in this period.", "#F0A030");
+}
+
+let quoteIndex = 0;
+function renderQuotes(quotes) {
+  const box = document.getElementById("quoteBox");
+  const nav = document.getElementById("quoteNav");
+  if (!quotes.length) {
+    nav.style.display = "none";
+    box.innerHTML = '<div class="quiet-note">No stand-out quotes in this period yet.</div>';
+    return;
+  }
+  quoteIndex = Math.min(quoteIndex, quotes.length - 1);
+  nav.style.display = quotes.length > 1 ? "flex" : "none";
+
+  function paint() {
+    const q = quotes[quoteIndex];
+    box.innerHTML = `
+      <div class="quote-text">${q.text}</div>
+      <div class="quote-byline">${q.reviewerName || "Anonymous"} <span class="stars">${"★".repeat(q.stars)}</span> · ${fmtDate(q.postedAt)}</div>`;
+    document.getElementById("quoteDots").innerHTML = quotes
+      .map((_, i) => `<button type="button" class="quote-dot${i === quoteIndex ? " active" : ""}" aria-label="Quote ${i + 1}" data-i="${i}"></button>`)
+      .join("");
+  }
+  paint();
+
+  document.getElementById("quotePrev").onclick = () => {
+    quoteIndex = (quoteIndex - 1 + quotes.length) % quotes.length;
+    paint();
+  };
+  document.getElementById("quoteNext").onclick = () => {
+    quoteIndex = (quoteIndex + 1) % quotes.length;
+    paint();
+  };
+  document.getElementById("quoteDots").onclick = (e) => {
+    const btn = e.target.closest(".quote-dot");
+    if (!btn) return;
+    quoteIndex = Number(btn.dataset.i);
+    paint();
+  };
 }
 
 function renderInsights(items, elId) {
