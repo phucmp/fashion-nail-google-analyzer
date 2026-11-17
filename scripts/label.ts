@@ -46,10 +46,11 @@ const FEEDBACK_THEMES = [
 const env = { GOOGLE_SERVICE_ACCOUNT_JSON: process.env.GOOGLE_SERVICE_ACCOUNT_JSON!, SHEET_ID: process.env.SHEET_ID! };
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const [reviewRows, labelRows, rosterRows] = await Promise.all([
+const [reviewRows, labelRows, rosterRows, unmatchedRows] = await Promise.all([
   getSheetRows(env, "reviews"),
   getSheetRows(env, "labels"),
   getSheetRows(env, "roster"),
+  getSheetRows(env, "unmatched_names"),
 ]);
 const reviews = parseReviewRows(reviewRows.slice(1));
 const labels = parseLabelRows(labelRows.slice(1));
@@ -132,7 +133,8 @@ const rosterNames = roster.filter((r) => r.active).map((r) => r.name);
 const now = new Date().toISOString();
 const newLabelRows: string[][] = [];
 const newUnmatchedRows: string[][] = [];
-const seenUnmatched = new Set<string>();
+// Seeded with rows already in the sheet so re-labeling (e.g. after a prompt-version bump) doesn't duplicate them.
+const seenUnmatched = new Set(unmatchedRows.slice(1).map((r) => `${(r[0] ?? "").toLowerCase()}|${r[1]}`));
 let labeledCount = 0;
 
 for (const batch of chunk(pending, BATCH_SIZE)) {
